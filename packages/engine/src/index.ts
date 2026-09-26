@@ -10,3 +10,5 @@ export * from './save.ts';
 export * from './edit.ts';
 export * from './ops/slot-copy.ts';
 export * from './diff.ts';
+export * from './domains/reader.ts';
+export * from './domains/assets.ts';
