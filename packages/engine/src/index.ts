@@ -13,3 +13,4 @@ export * from './diff.ts';
 export * from './domains/reader.ts';
 export * from './domains/assets.ts';
 export * from './merge/known.ts';
+export * from './merge/assets.ts';
