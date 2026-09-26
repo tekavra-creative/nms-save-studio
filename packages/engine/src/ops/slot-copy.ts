@@ -33,15 +33,22 @@ export interface SlotCopyOptions {
  * manifest re-keyed for the target file. Pure — the caller writes the result.
  */
 export function prepareSlotCopy(source: SaveFile, mapping: MappingFile, opts: SlotCopyOptions): { encoded: EncodedSave; session: EditSession } {
-  const keys = KeyMap.forDoc(mapping, source.doc);
-  const session = new EditSession(source.doc, keys);
+  const session = new EditSession(source.doc, KeyMap.forDoc(mapping, source.doc));
+  return { encoded: finalizeNewSlot(source, session, opts), session };
+}
+
+/**
+ * Turn an edited session into a brand-new slot: fresh cross-save identity + name, manifest keyed for
+ * the target file. `save` supplies the manifest template (the file the session was opened from).
+ */
+export function finalizeNewSlot(save: SaveFile, session: EditSession, opts: SlotCopyOptions): EncodedSave {
   session.apply(
     batch(`Copy to slot ${opts.target.slot} as “${opts.name}”`, [
       setString('New cross-save identity', ['CommonStateData', 'SaveUniversalId'], formatUniversalId(opts.universalId)),
       setString('Rename save', ['CommonStateData', 'SaveName'], textToBinary(opts.name)),
     ]),
   );
-  const encoded = source.encode(session.bytes, {
+  return save.encode(session.bytes, {
     manifestSlotIndex: opts.target.manifestSlotIndex,
     patch: {
       saveName: opts.name,
@@ -49,5 +56,4 @@ export function prepareSlotCopy(source: SaveFile, mapping: MappingFile, opts: Sl
       timestamp: Math.floor((opts.now ?? Date.now()) / 1000),
     },
   });
-  return { encoded, session };
 }

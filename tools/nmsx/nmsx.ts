@@ -5,7 +5,12 @@ import { basename, dirname, join } from 'node:path';
 import { parseArgs } from 'node:util';
 import {
   diffDocs,
+  EditSession,
+  finalizeNewSlot,
   KeyMap,
+  planMerge,
+  SaveReader,
+  type CurrencyMode,
   parseSaveFileName,
   prepareSlotCopy,
   randomUniversalId,
@@ -56,6 +61,9 @@ async function main(argv: string[]): Promise<void> {
       kind: { type: 'string', default: 'latest' },
       to: { type: 'string', default: 'empty' },
       name: { type: 'string' },
+      target: { type: 'string' },
+      source: { type: 'string' },
+      currencies: { type: 'string', default: 'sum' },
       limit: { type: 'string', default: '200' },
       'dry-run': { type: 'boolean', default: false },
     },
@@ -100,6 +108,39 @@ async function main(argv: string[]): Promise<void> {
     return;
   }
 
+  if (cmd === 'merge') {
+    const root = defaultRoot(values.root);
+    const slots = listSlots(root);
+    const tSlot = Number(values.target);
+    const sSlot = Number(values.source);
+    const tEntry = slots[tSlot - 1]?.latest;
+    const sEntry = slots[sSlot - 1]?.latest;
+    if (!tEntry || !sEntry) throw new Error('both --target and --source must be slots with a save');
+    const toSlot = values.to === 'empty' ? firstEmptySlot(slots) : Number(values.to);
+    if (!toSlot) throw new Error('no empty slot');
+    const dest = slots[toSlot - 1]!;
+    if (dest.auto || dest.manual) throw new Error(`slot ${toSlot} is not empty — merge only writes into empty slots`);
+    const target = openEntry(root, tEntry);
+    const source = openEntry(root, sEntry);
+    const keys = KeyMap.forDoc(mapping, target.doc);
+    const tr = new SaveReader(target.doc, keys);
+    const sr = new SaveReader(source.doc, KeyMap.forDoc(mapping, source.doc));
+    const plan = planMerge(tr, sr, { currencies: values.currencies as CurrencyMode });
+    console.log(`Merge slot ${sSlot} (${sEntry.manifest?.saveSummary}) into a copy of slot ${tSlot} (${tEntry.manifest?.saveSummary}) → slot ${toSlot}\n`);
+    for (const c of plan.changes) console.log(`  + [${c.group}] ${c.text}`);
+    for (const s of plan.skipped) console.log(`  · [${s.group}] ${s.text} — skipped: ${s.reason}`);
+    const session = new EditSession(target.doc, keys);
+    for (const c of plan.changes) session.apply(c.op);
+    const name = values.name ?? 'Merged save';
+    const ref = slotFile(toSlot, 'auto');
+    const encoded = finalizeNewSlot(target, session, { target: ref, name, universalId: randomUniversalId() });
+    console.log(`\n${plan.changes.length} change(s) → ${ref.dataName} as “${name}”`);
+    if (values['dry-run']) return console.log('dry run — nothing written');
+    const res = await writeSlotFile({ root, ref, encoded, expect: { data: null, meta: null }, snapshotDir: SNAPSHOTS, reason: `merge-${sSlot}-into-${tSlot}` });
+    console.log(`written + verified (${res.verified.decompressedSize} bytes). Snapshot before writing: ${res.snapshot}`);
+    return;
+  }
+
   if (cmd === 'diff') {
     const [pa, pb] = positionals;
     if (!pa || !pb) throw new Error('usage: nmsx diff <saveA.hg> <saveB.hg>');
@@ -117,6 +158,7 @@ async function main(argv: string[]): Promise<void> {
   console.log(`nmsx — No Man's Sky save tool (NMS Save Studio dev CLI)
   list [--root <st_folder>]
   copy-slot --from <slot> [--kind latest|auto|manual] [--to <slot>|empty] --name "<name>" [--dry-run]
+  merge --target <slot> --source <slot> [--to <slot>|empty] --name "<name>" [--currencies sum|max|keep-target|take-source] [--dry-run]
   diff <saveA.hg> <saveB.hg> [--limit N]`);
 }
 
