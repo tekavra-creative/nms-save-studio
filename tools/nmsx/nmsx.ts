@@ -4,6 +4,7 @@ import { homedir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { parseArgs } from 'node:util';
 import {
+  checkSurvival,
   diffDocs,
   EditSession,
   finalizeNewSlot,
@@ -141,6 +142,21 @@ async function main(argv: string[]): Promise<void> {
     return;
   }
 
+  if (cmd === 'survival') {
+    const root = defaultRoot(values.root);
+    const slots = listSlots(root);
+    const merged = slots[Number(values.target) - 1]?.latest;
+    const source = slots[Number(values.source) - 1]?.latest;
+    if (!merged || !source) throw new Error('usage: nmsx survival --target <merged slot> --source <slot merged from>');
+    const m = openEntry(root, merged);
+    const s = openEntry(root, source);
+    const report = checkSurvival(new SaveReader(m.doc, KeyMap.forDoc(mapping, m.doc)), new SaveReader(s.doc, KeyMap.forDoc(mapping, s.doc)));
+    console.log(`Slot ${values.target} (saved ${new Date((merged.manifest?.timestamp ?? 0) * 1000).toLocaleString()}) vs slot ${values.source}\n`);
+    for (const c of report.checks) console.log(`  ${c.survived ? '✓' : '✗'} [${c.group}] ${c.text}`);
+    console.log(`\n${report.survived}/${report.total} survived`);
+    return;
+  }
+
   if (cmd === 'diff') {
     const [pa, pb] = positionals;
     if (!pa || !pb) throw new Error('usage: nmsx diff <saveA.hg> <saveB.hg>');
@@ -159,6 +175,7 @@ async function main(argv: string[]): Promise<void> {
   list [--root <st_folder>]
   copy-slot --from <slot> [--kind latest|auto|manual] [--to <slot>|empty] --name "<name>" [--dry-run]
   merge --target <slot> --source <slot> [--to <slot>|empty] --name "<name>" [--currencies sum|max|keep-target|take-source] [--dry-run]
+  survival --target <merged slot> --source <slot merged from>
   diff <saveA.hg> <saveB.hg> [--limit N]`);
 }
 

@@ -15,3 +15,4 @@ export * from './domains/assets.ts';
 export * from './merge/known.ts';
 export * from './merge/assets.ts';
 export * from './merge/plan.ts';
+export * from './merge/survival.ts';
