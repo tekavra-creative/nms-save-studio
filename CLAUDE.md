@@ -35,5 +35,9 @@ Plan of record: `~/.claude/plans/valiant-jumping-newell.md` (milestones M0–M5)
 ## Layout
 
 - `packages/engine` — zero-runtime-dependency save codec + lossless editor (Node + renderer-safe).
-- `tools/` — dev CLIs (`nmsx` inspect/roundtrip, `savediff`).
+- `packages/io` — Node-only disk layer: save discovery, game-running check, safe write transaction.
+- `packages/data-forge` — reads the user's own game install: HGPAK v2 archives, BC7/DDS icons → PNG.
+  Icons live in `NMSARC.TexUI.pak`, item tables in `NMSARC.Precache.pak`, English text in
+  `NMSARC.Language.pak`. Never write extracted game files inside the repo.
+- `tools/` — dev CLIs (`nmsx list | copy-slot | diff`).
 - `apps/desktop` — Electron app (M1+).
