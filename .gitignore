@@ -1,0 +1,17 @@
+node_modules/
+dist/
+out/
+coverage/
+*.log
+.DS_Store
+.env
+.env.*
+.dev.vars
+# never commit real saves or game data
+*.hg
+*.pak
+*.mbin
+*.dds
+corpus/
+.cache/
+worktrees/

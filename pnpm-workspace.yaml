@@ -1,0 +1,10 @@
+packages:
+  - apps/*
+  - packages/*
+  - tools/*
+
+minimumReleaseAge: 4320
+
+onlyBuiltDependencies:
+  - electron
+  - esbuild
