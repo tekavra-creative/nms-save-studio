@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { app, BrowserWindow, ipcMain, utilityProcess, type UtilityProcess } from 'electron';
-import { API_CHANNEL, type EngineRequest } from '../shared/api.ts';
+import { API_CHANNEL, ENGINE_OPS, type EngineRequest } from '../shared/api.ts';
 import { hardenApp } from './security.ts';
 
 const isDev = !app.isPackaged && !!process.env.ELECTRON_RENDERER_URL;
@@ -36,7 +36,7 @@ function callEngine(request: EngineRequest): Promise<unknown> {
   });
 }
 
-const ALLOWED_OPS = new Set<EngineRequest['op']>(['listRoots', 'listSlots', 'overview', 'gameRunning']);
+const ALLOWED_OPS = new Set<EngineRequest['op']>(ENGINE_OPS);
 
 function createWindow(): void {
   const win = new BrowserWindow({

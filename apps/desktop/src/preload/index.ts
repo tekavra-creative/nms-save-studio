@@ -8,6 +8,12 @@ const api: StudioApi = {
   listSlots: (root) => call({ op: 'listSlots', root }),
   overview: (root, slot) => call({ op: 'overview', root, slot }),
   gameRunning: () => call({ op: 'gameRunning' }),
+  openMerge: (root, targetSlot, sourceSlot) => call({ op: 'openMerge', root, targetSlot, sourceSlot }),
+  applyChanges: (mergeId, changeIds) => call({ op: 'applyChanges', mergeId, changeIds }),
+  undo: (mergeId) => call({ op: 'undo', mergeId }),
+  redo: (mergeId) => call({ op: 'redo', mergeId }),
+  writeMerge: (mergeId, name) => call({ op: 'writeMerge', mergeId, name }),
+  closeMerge: (mergeId) => call({ op: 'closeMerge', mergeId }),
 };
 
 contextBridge.exposeInMainWorld('studio', api);

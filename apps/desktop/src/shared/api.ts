@@ -47,17 +47,69 @@ export interface OverviewView {
   capacity: { ships: number; multitools: number; companions: number };
 }
 
+export interface ChangeView {
+  id: number;
+  group: 'Starships' | 'Multi-tools' | 'Companions' | 'Currencies' | 'Knowledge';
+  text: string;
+  applied: boolean;
+}
+
+export interface MergeStateView {
+  mergeId: string;
+  targetSlot: number;
+  sourceSlot: number;
+  target: OverviewView;
+  source: OverviewView;
+  changes: ChangeView[];
+  skipped: { group: ChangeView['group']; text: string; reason: string }[];
+  canUndo: boolean;
+  canRedo: boolean;
+}
+
+export interface WriteResultView {
+  slot: number;
+  file: string;
+  name: string;
+  snapshot: string;
+  bytes: number;
+}
+
 export interface StudioApi {
   listRoots(): Promise<SaveRootView[]>;
   listSlots(root: string): Promise<SlotView[]>;
   overview(root: string, slot: number): Promise<OverviewView>;
   gameRunning(): Promise<boolean>;
+  openMerge(root: string, targetSlot: number, sourceSlot: number): Promise<MergeStateView>;
+  applyChanges(mergeId: string, changeIds: number[]): Promise<MergeStateView>;
+  undo(mergeId: string): Promise<MergeStateView>;
+  redo(mergeId: string): Promise<MergeStateView>;
+  writeMerge(mergeId: string, name: string): Promise<WriteResultView>;
+  closeMerge(mergeId: string): Promise<void>;
 }
 
 export type EngineRequest =
   | { op: 'listRoots' }
   | { op: 'listSlots'; root: string }
   | { op: 'overview'; root: string; slot: number }
-  | { op: 'gameRunning' };
+  | { op: 'gameRunning' }
+  | { op: 'openMerge'; root: string; targetSlot: number; sourceSlot: number }
+  | { op: 'applyChanges'; mergeId: string; changeIds: number[] }
+  | { op: 'undo'; mergeId: string }
+  | { op: 'redo'; mergeId: string }
+  | { op: 'writeMerge'; mergeId: string; name: string }
+  | { op: 'closeMerge'; mergeId: string };
+
+export const ENGINE_OPS: readonly EngineRequest['op'][] = [
+  'listRoots',
+  'listSlots',
+  'overview',
+  'gameRunning',
+  'openMerge',
+  'applyChanges',
+  'undo',
+  'redo',
+  'writeMerge',
+  'closeMerge',
+];
 
 export const API_CHANNEL = 'studio:call';
