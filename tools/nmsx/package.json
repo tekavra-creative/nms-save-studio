@@ -1,0 +1,20 @@
+{
+  "name": "@nss/nmsx",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "bin": {
+    "nmsx": "./nmsx.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@nss/engine": "workspace:*",
+    "@nss/io": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.2",
+    "typescript": "7.0.2"
+  }
+}
