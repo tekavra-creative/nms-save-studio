@@ -10,6 +10,9 @@ importers:
 
   apps/desktop:
     dependencies:
+      '@nss/data-forge':
+        specifier: workspace:*
+        version: link:../../packages/data-forge
       '@nss/engine':
         specifier: workspace:*
         version: link:../../packages/engine

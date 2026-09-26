@@ -6,7 +6,10 @@ import mappingFallback from '../../../../packages/engine/src/keys/mapping.fallba
 import { findSaveRoots, isGameRunning, listSlots } from '@nss/io';
 import type { EngineRequest, OverviewView, SlotView } from '../shared/api.ts';
 import { applyChanges, closeMerge, openMerge, redo, undo, writeMerge } from './merge.ts';
+import { iconPng } from './icons.ts';
 import { toOverviewView } from './views.ts';
+
+const USER_DATA = process.env['NSS_USER_DATA'] ?? '';
 
 const mapping = mappingFallback as MappingFile;
 
@@ -70,6 +73,8 @@ async function handle(req: EngineRequest): Promise<unknown> {
       return writeMerge(req.mergeId, req.name);
     case 'closeMerge':
       return closeMerge(req.mergeId);
+    case 'icon':
+      return iconPng(req.path, USER_DATA);
   }
 }
 

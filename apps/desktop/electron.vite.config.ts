@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'electron-vite';
 
 // Workspace packages ship TypeScript source, so they are bundled rather than externalized.
-const bundleWorkspace = { exclude: ['@nss/engine', '@nss/io'] };
+const bundleWorkspace = { exclude: ['@nss/engine', '@nss/io', '@nss/data-forge'] };
 // Electron and Node built-ins are provided by the runtime and must never be bundled.
 const external = ['electron', /^node:/, /^electron\//];
 

@@ -97,7 +97,9 @@ export type EngineRequest =
   | { op: 'undo'; mergeId: string }
   | { op: 'redo'; mergeId: string }
   | { op: 'writeMerge'; mergeId: string; name: string }
-  | { op: 'closeMerge'; mergeId: string };
+  | { op: 'closeMerge'; mergeId: string }
+  // internal only (served to the renderer via the nms-icon:// protocol, never callable directly)
+  | { op: 'icon'; path: string };
 
 export const ENGINE_OPS: readonly EngineRequest['op'][] = [
   'listRoots',

@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "@nss/engine": "workspace:*",
-    "@nss/io": "workspace:*"
+    "@nss/io": "workspace:*",
+    "@nss/data-forge": "workspace:*"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
