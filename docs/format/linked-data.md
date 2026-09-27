@@ -21,9 +21,18 @@ Ship slot i → customisation index `i < 6 ? i + 3 : i + 11`.
 - Don't change `PrimaryShip` unless moving the primary ship. Top-level `CurrentShip` /
   `ShipInventory` / `ShipLayout` mirror the primary ship — leave untouched.
 - **Corvette** (`Resource.Filename` contains `BIGGS`): also a `PersistentPlayerBases` entry with
-  `BaseType.PersistentBaseTypes == "PlayerShipBase"` and `UserData == ship index` → rewrite
-  `UserData`. Known hazards: moving while a corvette is primary corrupts; a save that never built a
-  corvette may not show an imported one. Not supported in M1.
+  `BaseType.PersistentBaseTypes == "PlayerShipBase"` and `UserData == ship index` → append that
+  entry (never splice — it's a growable list, not one of the fixed-size arrays above) and rewrite
+  its `UserData` to the new slot. Confirmed live in both real corpus saves: `PersistentPlayerBases`
+  sits at `BaseContext.PlayerStateData.PersistentPlayerBases`, and a real entry's fields
+  (`BaseType`, `UserData`, `Owner`, ...) match this doc exactly (`packages/engine/test/corvette.test.ts`
+  header has the probe). Implemented in `packages/engine/src/merge/assets.ts`
+  (`isCorvette`/`findCorvetteBase`, `transferAsset`). Blocked when the corvette is the source
+  save's `PrimaryShip` (moving it risks corruption) or when no linked base is found.
+  **Not yet verified against a real corvette save** — neither of the two saves in the golden
+  corpus has ever built one, so this is tested only against a synthetic fixture built to this
+  doc's shape. Re-verify with `nmsx` against a real corvette save before calling it fully proven,
+  and the game may not render an imported corvette until the target account has built one itself.
 
 ## Multi-tool (Multitools[6])
 Self-contained (own CustomisationData + UseLegacyColours). Empty: `Seed[0] == false`. Active tool

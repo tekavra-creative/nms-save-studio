@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-09-27 — Corvette support in Merge Studio
+
+### Added
+- Moving a corvette between saves now works: its ship record moves like any other ship, and its
+  linked `PersistentPlayerBases` entry moves with it, with `UserData` rewritten to the new slot.
+  Blocked only when the corvette is the source save's primary ship, or its linked base can't be
+  found. `packages/engine/src/merge/assets.ts` (`isCorvette`, `findCorvetteBase`), `merge/plan.ts`.
+
+### Known limitation
+- Verified against a synthetic fixture built to the documented format
+  (`packages/engine/test/corvette.test.ts`), not against a real corvette save — neither save in
+  the golden corpus has ever built one. Treat as unverified in practice until tested against one.
+
 ## 2026-09-27 — Raw Explorer (full editing, generic)
 
 ### Added

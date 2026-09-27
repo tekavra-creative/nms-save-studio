@@ -1,7 +1,7 @@
 import type { Op } from '../edit.ts';
 import { readCompanions, readMultitools, readShips } from '../domains/assets.ts';
 import type { SaveReader } from '../domains/reader.ts';
-import { freeSlot, transferAsset, transferBlockedReason, type AssetKind } from './assets.ts';
+import { freeSlot, isCorvette, transferAsset, transferBlockedReason, type AssetKind } from './assets.ts';
 import {
   learnListItems,
   mergePortalGlyphs,
@@ -124,9 +124,10 @@ export function planMerge(target: SaveReader, source: SaveReader, opts: MergeOpt
       continue;
     }
     taken[pick.kind].add(slot);
+    const caution = pick.kind === 'ship' && isCorvette(source, pick.sourceSlot) ? ' (brings its build record — may not appear until you next dock at a Space Station)' : '';
     changes.push({
       group,
-      text: `Bring ${label}`,
+      text: `Bring ${label}${caution}`,
       op: transferAsset(pick.kind, source, pick.sourceSlot, target, slot, `Bring ${label}`),
       ref: { kind: 'asset', asset: pick.kind, sourceSlot: pick.sourceSlot, targetSlot: slot },
     });

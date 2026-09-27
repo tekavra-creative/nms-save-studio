@@ -15,7 +15,7 @@
 - [x] 3 hero comps; Vikelas chose all three as switchable skins, Parhelion default
 
 ## M1 Merge Day
-- [x] Asset readers + transfer ops (ships incl. linked colour/customisation, multitools, companions); corvettes blocked with reason
+- [x] Asset readers + transfer ops (ships incl. linked colour/customisation, multitools, companions, corvettes) — corvette support verified against a synthetic fixture only, not a real corvette save (none in the corpus); re-verify when one exists
 - [x] Linked-data map documented (`docs/format/linked-data.md`)
 - [x] Electron shell (hardened, fuses, app:// + nms-icon:// protocols), engine in utilityProcess, typed IPC
 - [x] Saves home + Merge Studio + Changes ledger (per-line revert, currency sum/keep/replace, undo/redo) + Write to a new slot
