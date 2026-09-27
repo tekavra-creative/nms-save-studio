@@ -1,8 +1,9 @@
+import { drydock } from './drydock/manifest.tsx';
 import { parhelion } from './parhelion/manifest.tsx';
 import type { SkinManifest } from './types.ts';
 
 // Order = order shown in the switcher. The first entry is the default.
-export const SKINS: readonly SkinManifest[] = [parhelion];
+export const SKINS: readonly SkinManifest[] = [parhelion, drydock];
 
 const KEY = 'nss.skin';
 

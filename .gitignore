@@ -19,3 +19,5 @@ worktrees/
 test-results/
 playwright-report/
 dist-app/
+# screenshots of the user's real saves, taken while verifying skins
+design/skins/
