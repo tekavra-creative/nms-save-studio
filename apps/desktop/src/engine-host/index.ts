@@ -6,6 +6,7 @@ import mappingFallback from '../../../../packages/engine/src/keys/mapping.fallba
 import { findSaveRoots, isGameRunning, listSlots } from '@nss/io';
 import type { EngineRequest, OverviewView, SlotView } from '../shared/api.ts';
 import { applyChanges, closeMerge, openMerge, redo, revertChange, setCurrencyMode, undo, writeMerge } from './merge.ts';
+import { closeExplorer, explorerGetLeaf, explorerList, explorerRedo, explorerSetLeaf, explorerUndo, openExplorer, writeExplorer } from './explorer.ts';
 import { iconPng } from './icons.ts';
 import { toOverviewView } from './views.ts';
 
@@ -77,6 +78,23 @@ async function handle(req: EngineRequest): Promise<unknown> {
       return writeMerge(req.mergeId, req.name);
     case 'closeMerge':
       return closeMerge(req.mergeId);
+    case 'openExplorer':
+      return openExplorer(mapping, req.root, req.slot);
+    case 'explorerList':
+      return explorerList(req.explorerId, req.path);
+    case 'explorerGetLeaf':
+      return explorerGetLeaf(req.explorerId, req.path);
+    case 'explorerSetLeaf':
+      return explorerSetLeaf(req.explorerId, req.path, req.kind, req.raw);
+    case 'explorerUndo':
+      return explorerUndo(req.explorerId);
+    case 'explorerRedo':
+      return explorerRedo(req.explorerId);
+    case 'writeExplorer':
+      if (await isGameRunning()) throw new Error("No Man's Sky is running — quit the game before writing.");
+      return writeExplorer(req.explorerId);
+    case 'closeExplorer':
+      return closeExplorer(req.explorerId);
     case 'icon':
       return iconPng(req.path, USER_DATA);
   }

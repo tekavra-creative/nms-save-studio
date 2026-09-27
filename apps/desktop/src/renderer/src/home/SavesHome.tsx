@@ -12,10 +12,11 @@ interface Props {
   setSkin: (id: string) => void;
   skinCommands: Command[];
   onOpen: (root: string, target: number, source: number) => void;
+  onExplore: (root: string, slot: number) => void;
 }
 
 /** Pick the save to build on ("Into") and the save to take from ("From"), then open Merge Studio. */
-export function SavesHome({ skin, skins, setSkin, skinCommands, onOpen }: Props) {
+export function SavesHome({ skin, skins, setSkin, skinCommands, onOpen, onExplore }: Props) {
   const [root, setRoot] = useState<SaveRootView | null>(null);
   const [slots, setSlots] = useState<SlotView[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -132,6 +133,18 @@ export function SavesHome({ skin, skins, setSkin, skinCommands, onOpen }: Props)
                     ))}
                   </span>
                 </button>
+                {root && (
+                  <button
+                    type="button"
+                    className="explore-link"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onExplore(root.path, s.slot);
+                    }}
+                  >
+                    Browse every field →
+                  </button>
+                )}
               </li>
             );
           })}

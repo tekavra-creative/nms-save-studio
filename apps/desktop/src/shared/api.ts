@@ -95,6 +95,37 @@ export interface WriteResultView {
   bytes: number;
 }
 
+export type PathStepView = string | number;
+export type LeafKindView = 'string' | 'number' | 'boolean' | 'null';
+
+/** A node's raw key/index plus its readable name (mapped when known, raw key otherwise) and preview. */
+export interface NodeSummaryView {
+  key: PathStepView;
+  name: string;
+  kind: 'object' | 'array' | LeafKindView;
+  /** Object/array: child count. Leaf: -1. */
+  childCount: number;
+  preview: string;
+}
+
+/** A leaf's exact value. Numbers past Number.MAX_SAFE_INTEGER arrive as a decimal string. */
+export interface LeafValueView {
+  kind: LeafKindView;
+  value: string | number | boolean | null;
+}
+
+export interface ExplorerStateView {
+  explorerId: string;
+  root: string;
+  slot: number;
+  title: string;
+  canUndo: boolean;
+  canRedo: boolean;
+  /** The path just browsed/edited (for the caller's own confirmation — the app tracks its own breadcrumb). */
+  path: PathStepView[];
+  children: NodeSummaryView[];
+}
+
 export interface StudioApi {
   listRoots(): Promise<SaveRootView[]>;
   listSlots(root: string): Promise<SlotView[]>;
@@ -108,6 +139,14 @@ export interface StudioApi {
   redo(mergeId: string): Promise<MergeStateView>;
   writeMerge(mergeId: string, name: string): Promise<WriteResultView>;
   closeMerge(mergeId: string): Promise<void>;
+  openExplorer(root: string, slot: number): Promise<ExplorerStateView>;
+  explorerList(explorerId: string, path: PathStepView[]): Promise<ExplorerStateView>;
+  explorerGetLeaf(explorerId: string, path: PathStepView[]): Promise<LeafValueView>;
+  explorerSetLeaf(explorerId: string, path: PathStepView[], kind: LeafKindView, raw: string): Promise<ExplorerStateView>;
+  explorerUndo(explorerId: string): Promise<ExplorerStateView>;
+  explorerRedo(explorerId: string): Promise<ExplorerStateView>;
+  writeExplorer(explorerId: string): Promise<WriteResultView>;
+  closeExplorer(explorerId: string): Promise<void>;
 }
 
 export type EngineRequest =
@@ -123,6 +162,14 @@ export type EngineRequest =
   | { op: 'redo'; mergeId: string }
   | { op: 'writeMerge'; mergeId: string; name: string }
   | { op: 'closeMerge'; mergeId: string }
+  | { op: 'openExplorer'; root: string; slot: number }
+  | { op: 'explorerList'; explorerId: string; path: PathStepView[] }
+  | { op: 'explorerGetLeaf'; explorerId: string; path: PathStepView[] }
+  | { op: 'explorerSetLeaf'; explorerId: string; path: PathStepView[]; kind: LeafKindView; raw: string }
+  | { op: 'explorerUndo'; explorerId: string }
+  | { op: 'explorerRedo'; explorerId: string }
+  | { op: 'writeExplorer'; explorerId: string }
+  | { op: 'closeExplorer'; explorerId: string }
   // internal only (served to the renderer via the nms-icon:// protocol, never callable directly)
   | { op: 'icon'; path: string };
 
@@ -139,6 +186,14 @@ export const ENGINE_OPS: readonly EngineRequest['op'][] = [
   'redo',
   'writeMerge',
   'closeMerge',
+  'openExplorer',
+  'explorerList',
+  'explorerGetLeaf',
+  'explorerSetLeaf',
+  'explorerUndo',
+  'explorerRedo',
+  'writeExplorer',
+  'closeExplorer',
 ];
 
 export const API_CHANNEL = 'studio:call';

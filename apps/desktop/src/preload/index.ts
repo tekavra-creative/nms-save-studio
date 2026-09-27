@@ -16,6 +16,14 @@ const api: StudioApi = {
   redo: (mergeId) => call({ op: 'redo', mergeId }),
   writeMerge: (mergeId, name) => call({ op: 'writeMerge', mergeId, name }),
   closeMerge: (mergeId) => call({ op: 'closeMerge', mergeId }),
+  openExplorer: (root, slot) => call({ op: 'openExplorer', root, slot }),
+  explorerList: (explorerId, path) => call({ op: 'explorerList', explorerId, path }),
+  explorerGetLeaf: (explorerId, path) => call({ op: 'explorerGetLeaf', explorerId, path }),
+  explorerSetLeaf: (explorerId, path, kind, raw) => call({ op: 'explorerSetLeaf', explorerId, path, kind, raw }),
+  explorerUndo: (explorerId) => call({ op: 'explorerUndo', explorerId }),
+  explorerRedo: (explorerId) => call({ op: 'explorerRedo', explorerId }),
+  writeExplorer: (explorerId) => call({ op: 'writeExplorer', explorerId }),
+  closeExplorer: (explorerId) => call({ op: 'closeExplorer', explorerId }),
 };
 
 contextBridge.exposeInMainWorld('studio', api);

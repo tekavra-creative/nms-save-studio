@@ -39,3 +39,21 @@ body.ms-dragging * {
 .ms-ghost {
   will-change: transform, opacity;
 }
+/* Save card's secondary action into Raw Explorer — deliberately plain so it reads as
+   "more, if you want it" rather than competing with the card's own Into/From pick. */
+.explore-link {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: 500 12px system-ui, sans-serif;
+  color: inherit;
+  opacity: 0.55;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.explore-link:hover {
+  opacity: 0.9;
+}

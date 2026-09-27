@@ -1,0 +1,123 @@
+import { homedir } from 'node:os';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import {
+  EditSession,
+  getLeaf,
+  KeyMap,
+  listChildren,
+  SaveFile,
+  setLeaf,
+  type LeafKind,
+  type LeafValue,
+  type MappingFile,
+  type PathStep,
+} from '@nss/engine';
+import { fingerprint, listSlots, writeSlotFile, type SlotEntry } from '@nss/io';
+import type { ExplorerStateView, LeafValueView, NodeSummaryView, PathStepView, WriteResultView } from '../shared/api.ts';
+import { shortPlace } from './merge.ts';
+
+interface ExplorerSession {
+  id: string;
+  root: string;
+  slot: number;
+  title: string;
+  entry: SlotEntry;
+  file: SaveFile;
+  keys: KeyMap;
+  session: EditSession;
+  path: PathStep[];
+}
+
+const sessions = new Map<string, ExplorerSession>();
+
+function get(id: string): ExplorerSession {
+  const s = sessions.get(id);
+  if (!s) throw new Error('This explorer session was closed — open the save again.');
+  return s;
+}
+
+function toNodeView(n: ReturnType<typeof listChildren>[number]): NodeSummaryView {
+  return { key: n.key, name: n.name, kind: n.kind, childCount: n.childCount, preview: n.preview };
+}
+
+function view(s: ExplorerSession): ExplorerStateView {
+  return {
+    explorerId: s.id,
+    root: s.root,
+    slot: s.slot,
+    title: s.title,
+    canUndo: s.session.canUndo,
+    canRedo: s.session.canRedo,
+    path: s.path as PathStepView[],
+    children: listChildren(s.session.doc, s.keys, s.path).map(toNodeView),
+  };
+}
+
+export function openExplorer(mapping: MappingFile, root: string, slot: number): ExplorerStateView {
+  const info = listSlots(root)[slot - 1];
+  const entry = info?.latest;
+  if (!entry) throw new Error(`Slot ${slot} is empty.`);
+  const file = new SaveFile(
+    new Uint8Array(readFileSync(join(root, entry.ref.dataName))),
+    new Uint8Array(readFileSync(join(root, entry.ref.manifestName))),
+    entry.ref.manifestSlotIndex,
+  );
+  const keys = KeyMap.forDoc(mapping, file.doc);
+  const title = entry.manifest?.saveName || shortPlace(entry.manifest?.saveSummary) || `Slot ${slot}`;
+  const s: ExplorerSession = { id: crypto.randomUUID(), root, slot, title, entry, file, keys, session: new EditSession(file.doc, keys), path: [] };
+  sessions.set(s.id, s);
+  return view(s);
+}
+
+export function explorerList(id: string, path: PathStepView[]): ExplorerStateView {
+  const s = get(id);
+  s.path = path as PathStep[];
+  return view(s);
+}
+
+export function explorerGetLeaf(id: string, path: PathStepView[]): LeafValueView {
+  const s = get(id);
+  const leaf: LeafValue = getLeaf(s.session.doc, path as PathStep[]);
+  return { kind: leaf.kind, value: typeof leaf.value === 'bigint' ? leaf.value.toString() : leaf.value };
+}
+
+export function explorerSetLeaf(id: string, path: PathStepView[], kind: LeafValueView['kind'], raw: string): ExplorerStateView {
+  const s = get(id);
+  const name = `Edit ${path[path.length - 1]}`;
+  s.session.apply(setLeaf(name, path as PathStep[], kind as LeafKind, raw));
+  return view(s);
+}
+
+export function explorerUndo(id: string): ExplorerStateView {
+  get(id).session.undo();
+  return view(get(id));
+}
+
+export function explorerRedo(id: string): ExplorerStateView {
+  get(id).session.redo();
+  return view(get(id));
+}
+
+/** Writes back into the SAME slot/file it was opened from, guarded so a concurrent change (the game, Steam Cloud) since open() refuses the write. */
+export async function writeExplorer(id: string): Promise<WriteResultView> {
+  const s = get(id);
+  if (!s.session.canUndo) throw new Error('No edits to write yet.');
+  const encoded = s.file.encode(s.session.bytes);
+  const base = process.platform === 'darwin' ? join(homedir(), 'Library/Application Support/NMS Save Studio') : join(process.env['APPDATA'] ?? join(homedir(), 'AppData/Roaming'), 'NMS Save Studio');
+  const res = await writeSlotFile({
+    root: s.root,
+    ref: s.entry.ref,
+    encoded,
+    expect: { data: s.entry.data, meta: s.entry.meta },
+    snapshotDir: join(base, 'Snapshots'),
+    reason: `explorer-slot-${s.slot}`,
+  });
+  // re-fingerprint so a second write in the same session (after this one lands) still checks cleanly
+  s.entry = { ...s.entry, data: fingerprint(res.dataPath), meta: fingerprint(res.manifestPath) };
+  return { slot: s.slot, file: s.entry.ref.dataName, name: s.title, snapshot: res.snapshot, bytes: res.verified.decompressedSize };
+}
+
+export function closeExplorer(id: string): void {
+  sessions.delete(id);
+}
