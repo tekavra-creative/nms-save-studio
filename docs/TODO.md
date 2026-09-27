@@ -23,7 +23,7 @@
 - [x] "Ralfar + Anomaly" written to slot 5 via CLI — **waiting on Vikelas's in-game check**, then `nmsx survival --target 5 --source 3`
 - [x] Drydock + Portolan skins
 - [x] Full e2e suite across all skins (6/6)
-- [ ] Survival check in the app UI
+- [x] Survival check in the app UI ("Check survival" button on the home screen)
 
 ## M2 Full editing (in progress — this is the "extensive save editing" ask)
 - [x] Raw Explorer: generic browse + edit of any field in any save (`packages/engine/src/explorer.ts` + app screen, in-place write with the existing safe-write guard). This is the write-into-original-save path — no longer merge-only.
