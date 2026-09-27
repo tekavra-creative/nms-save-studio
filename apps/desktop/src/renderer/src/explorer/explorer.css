@@ -1,42 +1,23 @@
 /*
- * Raw Explorer is not yet skinned per design direction (Drydock/Portolan/Parhelion) — it borrows
- * the app shell's structural classes (.app/.top/.home-foot) but defines its own colors here using
- * only `--text` and the two font tokens every skin defines, plus currentColor-derived overlays,
- * so it stays readable in both the dark skins and Portolan's light paper skin without a bespoke
- * pass per skin. A per-skin visual treatment is still on the list.
+ * Structure only — no color, type, or border decisions here. Each skin (parhelion/skin.css,
+ * drydock/skin.css, portolan/skin.css) supplies its own real visual treatment for these classes,
+ * the same way it does for every other screen, so Raw Explorer looks native in whichever skin
+ * is active instead of a bolted-on neutral overlay.
  */
-/* .app's outer grid only defines 2 row tracks (header, body) — everything below the header
-   lives in this one wrapper so it lands in the second track instead of stacking on top of it. */
 .explorer-shell {
   display: flex;
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
 }
-.explorer .sub {
-  color: color-mix(in oklch, var(--text) 65%, transparent);
-}
-.explorer .back {
-  font: 500 13px/1 var(--ui, system-ui);
-  color: var(--text);
-  background: color-mix(in oklch, var(--text) 10%, transparent);
-  border: 1px solid color-mix(in oklch, var(--text) 18%, transparent);
-  border-radius: 8px;
-  padding: 8px 14px;
-  cursor: pointer;
-}
 .explorer-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 0 22px;
   flex-shrink: 0;
 }
 .explorer-crumbs {
-  padding: 10px 0;
-  font: 500 13px/1 var(--ui, system-ui);
-  color: var(--text);
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
@@ -48,12 +29,6 @@
 .explorer-search input {
   width: 100%;
   box-sizing: border-box;
-  padding: 7px 10px;
-  border-radius: 7px;
-  border: 1px solid color-mix(in oklch, var(--text) 20%, transparent);
-  background: color-mix(in oklch, var(--text) 5%, transparent);
-  color: var(--text);
-  font: 400 13px var(--ui, system-ui);
 }
 .explorer-hits {
   position: absolute;
@@ -66,10 +41,6 @@
   list-style: none;
   margin: 0;
   padding: 4px;
-  border-radius: 8px;
-  border: 1px solid color-mix(in oklch, var(--text) 20%, transparent);
-  background: Canvas;
-  box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.4);
 }
 .explorer-hits button {
   display: flex;
@@ -77,17 +48,8 @@
   gap: 2px;
   width: 100%;
   box-sizing: border-box;
-  padding: 6px 8px;
-  border: 0;
-  border-radius: 5px;
-  background: none;
-  color: var(--text);
-  font: 400 12px var(--ui, system-ui);
   text-align: left;
   cursor: pointer;
-}
-.explorer-hits button:hover {
-  background: color-mix(in oklch, var(--text) 10%, transparent);
 }
 .explorer-hits .hit-main {
   display: flex;
@@ -95,46 +57,28 @@
   gap: 10px;
 }
 .explorer-hits .name {
-  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .explorer-hits .preview {
-  opacity: 0.7;
   flex-shrink: 0;
 }
 .explorer-hits .hit-path {
-  opacity: 0.5;
-  font-size: 11px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.explorer-crumbs .sep {
-  margin: 0 6px;
-  opacity: 0.4;
-}
 .explorer-crumbs button {
-  background: none;
-  border: 0;
-  color: inherit;
   cursor: pointer;
-  padding: 2px 4px;
-  border-radius: 4px;
-}
-.explorer-crumbs button:not(:disabled):hover {
-  background: color-mix(in oklch, var(--text) 10%, transparent);
 }
 .explorer-crumbs button:disabled {
-  font-weight: 700;
   cursor: default;
 }
 .explorer-body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
   gap: 16px;
-  padding: 0 22px 22px;
   flex: 1;
   min-height: 0;
   overflow: hidden;
@@ -144,13 +88,10 @@
   margin: 0;
   padding: 0;
   overflow-y: auto;
-  border: 1px solid color-mix(in oklch, var(--text) 14%, transparent);
-  border-radius: 10px;
 }
 .explorer-rows li {
   display: flex;
   align-items: stretch;
-  border-bottom: 1px solid color-mix(in oklch, var(--text) 8%, transparent);
 }
 .explorer-row {
   display: grid;
@@ -158,11 +99,6 @@
   gap: 12px;
   flex: 1;
   min-width: 0;
-  padding: 8px 14px;
-  border: 0;
-  background: none;
-  color: var(--text);
-  font: 400 13px/1.4 var(--ui, system-ui);
   text-align: left;
   cursor: pointer;
 }
@@ -170,82 +106,38 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 0 10px;
   flex-shrink: 0;
 }
 .explorer-row-actions button {
-  font: 500 11px var(--ui, system-ui);
-  padding: 4px 8px;
-  border-radius: 5px;
-  border: 1px solid color-mix(in oklch, var(--text) 18%, transparent);
-  background: none;
-  color: var(--text);
-  opacity: 0.7;
   cursor: pointer;
 }
-.explorer-row-actions button:hover {
-  opacity: 1;
-  background: color-mix(in oklch, var(--text) 8%, transparent);
-}
-.explorer-row:hover {
-  background: color-mix(in oklch, var(--text) 6%, transparent);
-}
 .explorer-row .name {
-  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.explorer-row .kind {
-  opacity: 0.55;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
 .explorer-row .preview {
-  opacity: 0.8;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
-.explorer-row.kind-object .preview,
-.explorer-row.kind-array .preview {
-  opacity: 0.5;
-}
 .explorer-empty {
   padding: 20px;
-  opacity: 0.6;
-  font: 400 13px var(--ui, system-ui);
 }
 .explorer-editor {
   align-self: start;
-  border: 1px solid color-mix(in oklch, var(--text) 18%, transparent);
-  border-radius: 10px;
-  padding: 16px;
-  color: var(--text);
-  font: 400 13px/1.4 var(--ui, system-ui);
 }
 .explorer-editor h3 {
   margin: 0 0 4px;
-  font: 700 15px var(--display, serif);
 }
 .explorer-editor .meta {
   margin: 0 0 12px;
-  opacity: 0.6;
-  text-transform: uppercase;
-  font-size: 11px;
-  letter-spacing: 0.05em;
 }
 .explorer-editor input,
 .explorer-editor select {
   width: 100%;
   box-sizing: border-box;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid color-mix(in oklch, var(--text) 22%, transparent);
-  background: color-mix(in oklch, var(--text) 5%, transparent);
-  color: var(--text);
   font: inherit;
 }
 .explorer-editor .row {
@@ -254,52 +146,20 @@
   margin-top: 12px;
   justify-content: flex-end;
 }
-.explorer-editor button {
-  font: 500 13px var(--ui, system-ui);
-  padding: 7px 14px;
-  border-radius: 7px;
-  border: 1px solid color-mix(in oklch, var(--text) 18%, transparent);
-  background: none;
-  color: var(--text);
+.explorer-editor button,
+.explorer-foot button {
   cursor: pointer;
 }
-.explorer-editor button.primary {
-  background: var(--text);
-  color: Canvas;
-}
-.explorer-editor button:disabled {
-  opacity: 0.4;
+.explorer-editor button:disabled,
+.explorer-foot button:disabled {
   cursor: default;
 }
 .explorer-foot {
   display: flex;
   gap: 10px;
-  padding: 14px 22px;
   justify-content: flex-end;
   flex-shrink: 0;
 }
-.explorer-foot button {
-  font: 500 13px var(--ui, system-ui);
-  padding: 9px 16px;
-  border-radius: 8px;
-  border: 1px solid color-mix(in oklch, var(--text) 18%, transparent);
-  background: none;
-  color: var(--text);
-  cursor: pointer;
-}
-.explorer-foot button:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-.explorer-foot button.write:not(:disabled) {
-  background: var(--text);
-  color: Canvas;
-}
 .explorer-written {
-  margin: 0 22px 8px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  background: color-mix(in oklch, var(--text) 10%, transparent);
-  color: var(--text);
-  font: 500 13px var(--ui, system-ui);
+  flex-shrink: 0;
 }
