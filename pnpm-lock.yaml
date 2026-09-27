@@ -56,6 +56,9 @@ importers:
       '@nss/engine':
         specifier: workspace:*
         version: link:../engine
+      '@nss/gamedata':
+        specifier: workspace:*
+        version: link:../gamedata
     devDependencies:
       '@types/node':
         specifier: 26.6.2
@@ -75,6 +78,18 @@ importers:
       fast-check:
         specifier: 4.10.2
         version: 4.10.2
+      typescript:
+        specifier: 7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: 5.0.1
+        version: 5.0.1(@types/node@26.6.2)(vite@8.3.0(@types/node@26.6.2))
+
+  packages/gamedata:
+    devDependencies:
+      '@types/node':
+        specifier: 26.6.2
+        version: 26.6.2
       typescript:
         specifier: 7.0.2
         version: 7.0.2
