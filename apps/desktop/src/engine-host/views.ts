@@ -20,7 +20,14 @@ export function toOverviewView(r: SaveReader): OverviewView {
     })),
     multitools: o.multitools.map((m) => ({ index: m.index, name: m.name, class: m.class ?? null, active: m.active })),
     companions: o.companions.map((c) => ({ index: c.index, name: c.name, species: c.species })),
-    knowledge: { technology: o.knowledge.technology, products: o.knowledge.products, words: o.knowledge.words, portalGlyphs: o.knowledge.portalGlyphs },
+    knowledge: {
+      technology: o.knowledge.technology,
+      products: o.knowledge.products,
+      specials: o.knowledge.specials,
+      refinerRecipes: o.knowledge.refinerRecipes,
+      words: o.knowledge.words,
+      portalGlyphs: o.knowledge.portalGlyphs,
+    },
     capacity: o.capacity,
   };
 }

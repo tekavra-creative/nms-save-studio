@@ -43,7 +43,7 @@ export interface OverviewView {
   ships: ShipView[];
   multitools: { index: number; name: string; class: string | null; active: boolean }[];
   companions: { index: number; name: string; species: string }[];
-  knowledge: { technology: number; products: number; words: number; portalGlyphs: number };
+  knowledge: { technology: number; products: number; specials: number; refinerRecipes: number; words: number; portalGlyphs: number };
   capacity: { ships: number; multitools: number; companions: number };
 }
 
@@ -70,6 +70,10 @@ export interface MergeStateView {
   sourceSlot: number;
   targetTitle: string;
   sourceTitle: string;
+  /** Slot a Write will create (writes never touch the original saves); null when every slot is full. */
+  newSlot: number | null;
+  targetMeta: string;
+  sourceMeta: string;
   /** Target as it will be written (with applied changes). */
   target: OverviewView;
   /** Target as it is on disk now. */
@@ -78,7 +82,7 @@ export interface MergeStateView {
   changes: ChangeView[];
   /** Change ids in the order they were applied. */
   appliedOrder: number[];
-  skipped: { group: ChangeView['group']; text: string; reason: string }[];
+  skipped: { group: ChangeView['group']; text: string; reason: string; asset?: AssetKind; sourceSlot?: number }[];
   canUndo: boolean;
   canRedo: boolean;
 }

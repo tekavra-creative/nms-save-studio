@@ -67,3 +67,12 @@ export function listSlots(root: string): SlotInfo[] {
 export function firstEmptySlot(slots: SlotInfo[]): number | undefined {
   return slots.find((s) => !s.auto && !s.manual)?.slot;
 }
+
+/**
+ * Where a brand-new save goes: the first empty slot after the last one in use, so a slot the player
+ * recently deleted (which Steam Cloud may still remember) is not reused. Falls back to any gap.
+ */
+export function nextNewSlot(slots: SlotInfo[]): number | undefined {
+  const lastUsed = slots.reduce((m, s) => (s.auto || s.manual ? Math.max(m, s.slot) : m), 0);
+  return slots.find((s) => s.slot > lastUsed && !s.auto && !s.manual)?.slot ?? firstEmptySlot(slots);
+}

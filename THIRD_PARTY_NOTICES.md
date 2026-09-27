@@ -16,6 +16,12 @@ from GPL/AGPL projects is included.
 - **nms-mission-progress** — okranger1777, MIT License. Story-step data (planned, M2).
   https://github.com/okranger1777/nms-mission-progress
 
+## Fonts (SIL Open Font License 1.1)
+
+Bundled as local woff2 files (downloaded by `tools/fetch-fonts.mjs` from Google Fonts), used under the
+SIL Open Font License 1.1 — https://openfontlicense.org:
+- **Newsreader** — Production Type. **Public Sans** — USWDS / General Services Administration.
+
 ## Data downloaded at runtime
 
 - **mapping.json** — MBINCompiler release asset, monkeyman192 and contributors, LGPL-3.0.

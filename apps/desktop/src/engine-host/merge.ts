@@ -17,7 +17,7 @@ import {
   type MappingFile,
   type MergePlan,
 } from '@nss/engine';
-import { firstEmptySlot, listSlots, writeSlotFile, type SlotEntry } from '@nss/io';
+import { listSlots, nextNewSlot, writeSlotFile, type SlotEntry } from '@nss/io';
 import type { ChangeView, MergeStateView, WriteResultView } from '../shared/api.ts';
 import { toOverviewView } from './views.ts';
 
@@ -33,6 +33,9 @@ interface MergeSession {
   sourceSlot: number;
   targetTitle: string;
   sourceTitle: string;
+  targetMeta: string;
+  sourceMeta: string;
+  newSlot: number | null;
   target: SaveFile;
   keys: KeyMap;
   source: SaveReader;
@@ -44,6 +47,14 @@ interface MergeSession {
 }
 
 const sessions = new Map<string, MergeSession>();
+
+/** "In the Ralfar system" → "Ralfar", "Aboard the Space Anomaly" → "Space Anomaly", "On Planet (Iiha 88/A3)" → "Iiha 88/A3". */
+export function shortPlace(summary: string | undefined): string {
+  if (!summary) return '';
+  const planet = /^On Planet \((.+)\)$/.exec(summary);
+  if (planet) return planet[1]!;
+  return summary.replace(/^(In|Aboard|On|At) the /, '').replace(/ system$/, '').trim();
+}
 
 function open(root: string, e: SlotEntry): SaveFile {
   return new SaveFile(new Uint8Array(readFileSync(join(root, e.ref.dataName))), new Uint8Array(readFileSync(join(root, e.ref.manifestName))), e.ref.manifestSlotIndex);
@@ -111,6 +122,9 @@ function view(m: MergeSession): MergeStateView {
     sourceSlot: m.sourceSlot,
     targetTitle: m.targetTitle,
     sourceTitle: m.sourceTitle,
+    targetMeta: m.targetMeta,
+    sourceMeta: m.sourceMeta,
+    newSlot: m.newSlot,
     target: toOverviewView(new SaveReader(m.session.doc, m.keys)),
     targetBefore: toOverviewView(new SaveReader(m.target.doc, m.keys)),
     source: toOverviewView(m.source),
@@ -139,7 +153,13 @@ export function openMerge(mapping: MappingFile, root: string, targetSlot: number
   const keys = KeyMap.forDoc(mapping, target.doc);
   const source = new SaveReader(sourceSave.doc, KeyMap.forDoc(mapping, sourceSave.doc));
   const plan = planMerge(new SaveReader(target.doc, keys), source);
-  const title = (e: SlotEntry) => e.manifest?.saveName || e.manifest?.saveSummary || `Slot ${e.ref.slot}`;
+  const title = (e: SlotEntry) => e.manifest?.saveName || shortPlace(e.manifest?.saveSummary) || `Slot ${e.ref.slot}`;
+  const meta = (e: SlotEntry) => {
+    const secs = Number(e.manifest?.totalPlayTime ?? 0n);
+    const when = e.manifest ? new Date(e.manifest.timestamp * 1000) : null;
+    const saved = when ? when.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+    return [`Slot ${e.ref.slot}`, `${Math.floor(secs / 3600)} h ${Math.floor((secs % 3600) / 60)} m`, saved ? `saved ${saved}` : ''].filter(Boolean).join(' · ');
+  };
   const m: MergeSession = {
     id: crypto.randomUUID(),
     root,
@@ -147,6 +167,9 @@ export function openMerge(mapping: MappingFile, root: string, targetSlot: number
     sourceSlot,
     targetTitle: title(t),
     sourceTitle: title(s),
+    targetMeta: meta(t),
+    sourceMeta: meta(s),
+    newSlot: nextNewSlot(slots) ?? null,
     target,
     keys,
     source,
@@ -216,7 +239,7 @@ export function redo(id: string): MergeStateView {
 export async function writeMerge(id: string, name: string): Promise<WriteResultView> {
   const m = get(id);
   if (!m.state.applied.length) throw new Error('Nothing to write yet.');
-  const slot = firstEmptySlot(listSlots(m.root));
+  const slot = nextNewSlot(listSlots(m.root));
   if (!slot) throw new Error('Every save slot is full — delete one in the game first.');
   const ref = slotFile(slot, 'auto');
   const finalName = name.trim() || `${m.targetTitle} + ${m.sourceTitle}`.slice(0, 120);
