@@ -42,6 +42,8 @@ export interface SkippedLine {
   group: ChangeLine['group'];
   text: string;
   reason: string;
+  asset?: AssetKind;
+  sourceSlot?: number;
 }
 
 export interface MergePlan {
@@ -113,12 +115,12 @@ export function planMerge(target: SaveReader, source: SaveReader, opts: MergeOpt
     const group = GROUP[pick.kind];
     const blocked = transferBlockedReason(pick.kind, source, pick.sourceSlot);
     if (blocked) {
-      skipped.push({ group, text: label, reason: blocked });
+      skipped.push({ group, text: label, reason: blocked, asset: pick.kind, sourceSlot: pick.sourceSlot });
       continue;
     }
     const slot = freeSlot(pick.kind, target, taken[pick.kind]);
     if (typeof slot !== 'number') {
-      skipped.push({ group, text: label, reason: slot.reason });
+      skipped.push({ group, text: label, reason: slot.reason, asset: pick.kind, sourceSlot: pick.sourceSlot });
       continue;
     }
     taken[pick.kind].add(slot);
