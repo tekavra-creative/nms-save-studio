@@ -1,0 +1,38 @@
+appId: com.tekavra.nmssavestudio
+productName: NMS Save Studio
+copyright: Copyright © 2026 Tekavra Creative
+directories:
+  output: dist-app
+  buildResources: build
+files:
+  - out/**
+  - package.json
+asar: true
+# Everything is bundled by electron-vite; the app has no runtime dependencies to ship.
+electronFuses:
+  runAsNode: false
+  enableCookieEncryption: true
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  enableEmbeddedAsarIntegrityValidation: true
+  onlyLoadAppFromAsar: true
+  grantFileProtocolExtraPrivileges: false
+mac:
+  target:
+    - target: dmg
+      arch: [arm64]
+  category: public.app-category.utilities
+  hardenedRuntime: true
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  # M1: ad-hoc signature (runs on this Mac; Apple Silicon kills unsigned code).
+  # Developer ID signing + notarization arrive in M5.
+  identity: '-'
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true

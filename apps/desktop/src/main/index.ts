@@ -1,11 +1,27 @@
-import { join } from 'node:path';
-import { app, BrowserWindow, ipcMain, protocol, utilityProcess, type UtilityProcess } from 'electron';
+import { join, normalize, sep } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { app, BrowserWindow, ipcMain, net, protocol, utilityProcess, type UtilityProcess } from 'electron';
 import { API_CHANNEL, ENGINE_OPS, type EngineRequest } from '../shared/api.ts';
 import { hardenApp } from './security.ts';
 
 const isDev = !app.isPackaged && !!process.env.ELECTRON_RENDERER_URL;
 hardenApp(isDev);
-protocol.registerSchemesAsPrivileged([{ scheme: 'nms-icon', privileges: { standard: true, secure: true } }]);
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true } },
+  { scheme: 'nms-icon', privileges: { standard: true, secure: true } },
+]);
+
+const RENDERER_DIR = join(import.meta.dirname, '../renderer');
+
+// app://bundle/<file> serves the built interface from inside the package (file:// has no extra privileges).
+function registerAppProtocol(): void {
+  protocol.handle('app', (req) => {
+    const rel = decodeURIComponent(new URL(req.url).pathname).replace(/^\/+/, '') || 'index.html';
+    const file = normalize(join(RENDERER_DIR, rel));
+    if (!file.startsWith(RENDERER_DIR + sep)) return new Response(null, { status: 404 });
+    return net.fetch(pathToFileURL(file).toString());
+  });
+}
 
 let engine: UtilityProcess | undefined;
 let nextId = 1;
@@ -62,8 +78,26 @@ function createWindow(): void {
     },
   });
   win.once('ready-to-show', () => win.show());
+  const shot = process.env['NSS_SELFTEST_SHOT'];
+  if (shot) void selfTest(win, shot);
   if (isDev) void win.loadURL(process.env.ELECTRON_RENDERER_URL!);
-  else void win.loadFile(join(import.meta.dirname, '../renderer/index.html'));
+  else void win.loadURL('app://bundle/index.html');
+}
+
+// Packaged-build smoke test: fuses block debugger attach, so the app proves itself.
+// NSS_SELFTEST_SHOT=/path.png → wait for the saves list, save a screenshot, quit.
+async function selfTest(win: BrowserWindow, path: string): Promise<void> {
+  const { writeFileSync } = await import('node:fs');
+  let ok = false;
+  for (let i = 0; i < 60 && !ok; i++) {
+    ok = await win.webContents
+      .executeJavaScript("!!document.querySelector('[aria-label=\"Saves\"] button')")
+      .catch(() => false);
+    if (!ok) await new Promise((r) => setTimeout(r, 250));
+  }
+  writeFileSync(path, (await win.webContents.capturePage()).toPNG());
+  console.log(`selftest ${ok ? 'PASS' : 'FAIL'} ${path}`);
+  app.exit(ok ? 0 : 1);
 }
 
 ipcMain.handle(API_CHANNEL, async (event, request: EngineRequest) => {
@@ -85,6 +119,7 @@ function registerIconProtocol(): void {
 }
 
 app.whenReady().then(() => {
+  registerAppProtocol();
   registerIconProtocol();
   createWindow();
   app.on('activate', () => {
