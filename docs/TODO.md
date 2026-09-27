@@ -1,5 +1,9 @@
 # TODO
 
+## Facts pack
+- [x] 5,235 items with names/icons from the user's own install (`packages/gamedata`, `data-forge` build-facts)
+- [ ] Use item names + icons in the UI (knowledge lists, inventories)
+
 ## M0 Foundations
 - [x] Repo, clean-room CLAUDE.md, private GitHub remote
 - [x] Engine: LZ4, chunks, XXTEA manifest, lossless JSON, edit/undo, slot copy, diff
@@ -11,11 +15,16 @@
 - [ ] 3 Merge Studio hero comps + name candidates; Vikelas picks one (agent running)
 
 ## M1 Merge Day
-- [ ] Domain adapters: ships (12 slots + linked arrays), multitools, pets/eggs, currencies, known lists
-- [ ] Learn linked arrays with `nmsx diff` on real in-game changes
-- [ ] Electron shell (hardened), engine host in utilityProcess, typed IPC
-- [ ] Saves home + Merge Studio + Changes panel + Write
-- [ ] Merge Space Anomaly assets into a new-slot copy of Ralfar; Vikelas loads it in-game
+- [x] Asset readers + transfer ops (ships incl. linked colour/customisation, multitools, companions); corvettes blocked with reason
+- [x] Linked-data map documented (`docs/format/linked-data.md`)
+- [x] Electron shell (hardened, fuses, app:// + nms-icon:// protocols), engine in utilityProcess, typed IPC
+- [x] Saves home + Merge Studio + Changes ledger (per-line revert, currency sum/keep/replace, undo/redo) + Write to a new slot
+- [x] Skin system; Parhelion skin (default, fonts bundled)
+- [x] "Ralfar + Anomaly" written to slot 5 via CLI — **waiting on Vikelas's in-game check**, then `nmsx survival --target 5 --source 3`
+- [ ] Drydock + Portolan skins (in progress)
+- [ ] Full e2e suite across all skins
+- [ ] Write-into-original-save option (currently always a new slot)
+- [ ] Survival check in the app UI
 
 ## Discovered
 - [ ] Survival check: re-read after a play session and report which edits stuck
