@@ -30,6 +30,7 @@
     "vite": "8.3.0",
     "@nss/data-forge": "workspace:*",
     "@nss/engine": "workspace:*",
+    "@nss/gamedata": "workspace:*",
     "@nss/io": "workspace:*"
   },
   "description": "Save editor for No Man's Sky",

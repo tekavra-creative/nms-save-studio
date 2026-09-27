@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { ExplorerStateView, LeafKindView, LeafValueView, NodeSummaryView, PathStepView, SearchHitView, WriteResultView } from '../../../shared/api.ts';
+import type { ContainerListEntryView, ContainerView, ExplorerStateView, LeafKindView, LeafValueView, NodeSummaryView, PathStepView, SearchHitView, WriteResultView } from '../../../shared/api.ts';
 import type { SkinManifest } from '../skins/types.ts';
 import './explorer.css';
+import { InventoryGrid } from './InventoryGrid.tsx';
 
 interface Props {
   skin: SkinManifest;
@@ -34,6 +35,10 @@ export function RawExplorer({ skin, root, slot, onBack }: Props) {
   const [written, setWritten] = useState<WriteResultView | null>(null);
   const [query, setQuery] = useState('');
   const [hits, setHits] = useState<SearchHitView[] | null>(null);
+  const [tab, setTab] = useState<'fields' | 'inventory'>('fields');
+  const [containers, setContainers] = useState<ContainerListEntryView[]>([]);
+  const [activeContainer, setActiveContainer] = useState<string | null>(null);
+  const [containerView, setContainerView] = useState<ContainerView | null>(null);
 
   const path = crumbs[crumbs.length - 1]!.path;
 
@@ -147,8 +152,63 @@ export function RawExplorer({ skin, root, slot, onBack }: Props) {
       .catch((e: Error) => setError(e.message));
   };
 
-  const undo = () => explorerId && window.studio.explorerUndo(explorerId).then(applyState).catch((e: Error) => setError(e.message));
-  const redo = () => explorerId && window.studio.explorerRedo(explorerId).then(applyState).catch((e: Error) => setError(e.message));
+  const refreshContainer = useCallback(
+    (key: string) => {
+      if (!explorerId) return;
+      window.studio.inventoryOpen(explorerId, key).then(setContainerView).catch((e: Error) => setError(e.message));
+    },
+    [explorerId],
+  );
+
+  useEffect(() => {
+    if (!explorerId || tab !== 'inventory') return;
+    window.studio.inventoryContainers(explorerId).then(setContainers).catch((e: Error) => setError(e.message));
+  }, [explorerId, tab]);
+
+  const pickContainer = (key: string) => {
+    setActiveContainer(key);
+    refreshContainer(key);
+  };
+
+  const applyContainer = (v: ContainerView) => {
+    setContainerView(v);
+    setContainers((cs) => cs.map((c) => (c.key === v.key ? { ...c, used: v.slots.length } : c)));
+    // the footer's Undo/Redo reflect the tree session, which this edit also just changed
+    if (explorerId) window.studio.explorerList(explorerId, path).then(applyState).catch(() => {});
+  };
+  const onInventoryError = (e: Error) => setError(e.message);
+
+  const setSlotAmountOp = (arrayIndex: number, amount: number) => {
+    if (!explorerId || !activeContainer) return;
+    window.studio.inventorySetAmount(explorerId, activeContainer, arrayIndex, amount).then(applyContainer).catch(onInventoryError);
+  };
+  const setSlotItemOp = (arrayIndex: number, itemId: string, amount: number) => {
+    if (!explorerId || !activeContainer) return;
+    window.studio.inventorySetItem(explorerId, activeContainer, arrayIndex, itemId, amount).then(applyContainer).catch(onInventoryError);
+  };
+  const fillSlotOp = (x: number, y: number, itemId: string, amount: number) => {
+    if (!explorerId || !activeContainer) return;
+    window.studio.inventoryFillSlot(explorerId, activeContainer, x, y, itemId, amount).then(applyContainer).catch(onInventoryError);
+  };
+  const clearSlotOp = (arrayIndex: number) => {
+    if (!explorerId || !activeContainer) return;
+    window.studio.inventoryClearSlot(explorerId, activeContainer, arrayIndex).then(applyContainer).catch(onInventoryError);
+  };
+
+  const undo = () =>
+    explorerId &&
+    window.studio
+      .explorerUndo(explorerId)
+      .then(applyState)
+      .then(() => activeContainer && refreshContainer(activeContainer))
+      .catch((e: Error) => setError(e.message));
+  const redo = () =>
+    explorerId &&
+    window.studio
+      .explorerRedo(explorerId)
+      .then(applyState)
+      .then(() => activeContainer && refreshContainer(activeContainer))
+      .catch((e: Error) => setError(e.message));
 
   const write = () => {
     if (!explorerId) return;
@@ -195,96 +255,121 @@ export function RawExplorer({ skin, root, slot, onBack }: Props) {
       )}
 
       <div className="explorer-toolbar">
-        <nav className="explorer-crumbs" aria-label="Path">
-          {crumbs.map((c, i) => (
-            <span key={i}>
-              {i > 0 && <span className="sep">/</span>}
-              <button type="button" disabled={i === crumbs.length - 1} onClick={() => go(c.path, c.label, i)}>
-                {c.label}
-              </button>
-            </span>
-          ))}
-        </nav>
-        <div className="explorer-search">
-          <input
-            type="search"
-            placeholder="Search every field in this save…"
-            value={query}
-            onChange={(e) => runSearch(e.target.value)}
-            aria-label="Search"
-          />
-          {hits && (
-            <ul className="explorer-hits" aria-label="Search results">
-              {hits.length === 0 && <li className="explorer-empty">No matches.</li>}
-              {hits.map((h, i) => (
-                <li key={i}>
-                  <button type="button" onClick={() => jumpToHit(h)}>
-                    <span className="hit-main">
-                      <span className="name">{h.name}</span>
-                      <span className="preview">{h.preview}</span>
-                    </span>
-                    <span className="hit-path">{h.path.map(String).join(' / ')}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+        <div className="explorer-tabs" role="tablist" aria-label="View">
+          <button type="button" role="tab" aria-selected={tab === 'fields'} onClick={() => setTab('fields')}>
+            Fields
+          </button>
+          <button type="button" role="tab" aria-selected={tab === 'inventory'} onClick={() => setTab('inventory')}>
+            Inventories
+          </button>
         </div>
-      </div>
-
-      <main className="explorer-body">
-        <ul className="explorer-rows" aria-label="Fields">
-          {children.map((row, i) => (
-            <li key={String(row.key)}>
-              <button type="button" className={`explorer-row kind-${row.kind}`} onClick={() => openRow(row)}>
-                <span className="name">{row.name}</span>
-                <span className="kind">{row.kind === 'object' || row.kind === 'array' ? row.kind : ''}</span>
-                <span className="preview">{row.preview}</span>
-              </button>
-              {isArray && (
-                <span className="explorer-row-actions">
-                  <button type="button" title="Duplicate this item" onClick={() => duplicateItem(i)}>
-                    Duplicate
-                  </button>
-                  <button type="button" title="Remove this item" onClick={() => removeItem(i)}>
-                    Remove
-                  </button>
-                </span>
-              )}
-            </li>
-          ))}
-          {children.length === 0 && <li className="explorer-empty">Nothing here.</li>}
-        </ul>
-
-        {editing && (
-          <div className="explorer-editor" role="dialog" aria-label={`Edit ${editing.row.name}`}>
-            <h3>{editing.row.name}</h3>
-            <p className="meta">{editing.leaf.kind}</p>
-            {editing.leaf.kind === 'boolean' ? (
-              <select value={editing.draft} onChange={(e) => setEditing({ ...editing, draft: e.target.value })}>
-                <option value="true">true</option>
-                <option value="false">false</option>
-              </select>
-            ) : (
-              <input
-                autoFocus
-                value={editing.draft}
-                onChange={(e) => setEditing({ ...editing, draft: e.target.value })}
-                onKeyDown={(e) => e.key === 'Enter' && saveLeaf()}
-                disabled={editing.leaf.kind === 'null'}
-              />
+        {tab === 'fields' && (
+          <nav className="explorer-crumbs" aria-label="Path">
+            {crumbs.map((c, i) => (
+              <span key={i}>
+                {i > 0 && <span className="sep">/</span>}
+                <button type="button" disabled={i === crumbs.length - 1} onClick={() => go(c.path, c.label, i)}>
+                  {c.label}
+                </button>
+              </span>
+            ))}
+          </nav>
+        )}
+        {tab === 'fields' && (
+          <div className="explorer-search">
+            <input
+              type="search"
+              placeholder="Search every field in this save…"
+              value={query}
+              onChange={(e) => runSearch(e.target.value)}
+              aria-label="Search"
+            />
+            {hits && (
+              <ul className="explorer-hits" aria-label="Search results">
+                {hits.length === 0 && <li className="explorer-empty">No matches.</li>}
+                {hits.map((h, i) => (
+                  <li key={i}>
+                    <button type="button" onClick={() => jumpToHit(h)}>
+                      <span className="hit-main">
+                        <span className="name">{h.name}</span>
+                        <span className="preview">{h.preview}</span>
+                      </span>
+                      <span className="hit-path">{h.path.map(String).join(' / ')}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
             )}
-            <div className="row">
-              <button type="button" onClick={() => setEditing(null)}>
-                Cancel
-              </button>
-              <button type="button" className="primary" onClick={saveLeaf} disabled={editing.leaf.kind === 'null'}>
-                Set
-              </button>
-            </div>
           </div>
         )}
-      </main>
+      </div>
+
+      {tab === 'fields' ? (
+        <main className="explorer-body">
+          <ul className="explorer-rows" aria-label="Fields">
+            {children.map((row, i) => (
+              <li key={String(row.key)}>
+                <button type="button" className={`explorer-row kind-${row.kind}`} onClick={() => openRow(row)}>
+                  <span className="name">{row.name}</span>
+                  <span className="kind">{row.kind === 'object' || row.kind === 'array' ? row.kind : ''}</span>
+                  <span className="preview">{row.preview}</span>
+                </button>
+                {isArray && (
+                  <span className="explorer-row-actions">
+                    <button type="button" title="Duplicate this item" onClick={() => duplicateItem(i)}>
+                      Duplicate
+                    </button>
+                    <button type="button" title="Remove this item" onClick={() => removeItem(i)}>
+                      Remove
+                    </button>
+                  </span>
+                )}
+              </li>
+            ))}
+            {children.length === 0 && <li className="explorer-empty">Nothing here.</li>}
+          </ul>
+
+          {editing && (
+            <div className="explorer-editor" role="dialog" aria-label={`Edit ${editing.row.name}`}>
+              <h3>{editing.row.name}</h3>
+              <p className="meta">{editing.leaf.kind}</p>
+              {editing.leaf.kind === 'boolean' ? (
+                <select value={editing.draft} onChange={(e) => setEditing({ ...editing, draft: e.target.value })}>
+                  <option value="true">true</option>
+                  <option value="false">false</option>
+                </select>
+              ) : (
+                <input
+                  autoFocus
+                  value={editing.draft}
+                  onChange={(e) => setEditing({ ...editing, draft: e.target.value })}
+                  onKeyDown={(e) => e.key === 'Enter' && saveLeaf()}
+                  disabled={editing.leaf.kind === 'null'}
+                />
+              )}
+              <div className="row">
+                <button type="button" onClick={() => setEditing(null)}>
+                  Cancel
+                </button>
+                <button type="button" className="primary" onClick={saveLeaf} disabled={editing.leaf.kind === 'null'}>
+                  Set
+                </button>
+              </div>
+            </div>
+          )}
+        </main>
+      ) : (
+        <InventoryGrid
+          containers={containers}
+          activeKey={activeContainer}
+          view={containerView}
+          onPick={pickContainer}
+          onSetAmount={setSlotAmountOp}
+          onSetItem={setSlotItemOp}
+          onFill={fillSlotOp}
+          onClear={clearSlotOp}
+        />
+      )}
 
       <div className="explorer-foot">
         <button type="button" onClick={undo} disabled={!canUndo}>

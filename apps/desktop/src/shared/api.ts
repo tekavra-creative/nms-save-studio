@@ -87,6 +87,48 @@ export interface MergeStateView {
   canRedo: boolean;
 }
 
+export interface ItemInfoView {
+  id: string;
+  name: string;
+  known: boolean;
+  kind: 'substance' | 'product' | 'technology' | 'procedural' | 'unknown';
+  iconPath?: string;
+  rarity?: string;
+}
+
+export interface InvSlotView {
+  arrayIndex: number;
+  x: number;
+  y: number;
+  amount: number;
+  maxAmount: number;
+  item: ItemInfoView;
+}
+
+export interface ContainerView {
+  key: string;
+  label: string;
+  width: number;
+  height: number;
+  validCells: [number, number][];
+  slots: InvSlotView[];
+}
+
+export interface ContainerListEntryView {
+  key: string;
+  label: string;
+  used: number;
+  capacity: number;
+}
+
+export interface ItemSearchHitView {
+  id: string;
+  name: string;
+  kind: 'substance' | 'product' | 'technology' | 'procedural';
+  iconPath?: string;
+  rarity?: string;
+}
+
 export interface SurvivalCheckView {
   group: 'Starships' | 'Multi-tools' | 'Companions' | 'Knowledge';
   text: string;
@@ -174,6 +216,13 @@ export interface StudioApi {
   writeExplorer(explorerId: string): Promise<WriteResultView>;
   closeExplorer(explorerId: string): Promise<void>;
   survivalCheck(root: string, mergedSlot: number, sourceSlot: number): Promise<SurvivalReportView>;
+  inventoryContainers(explorerId: string): Promise<ContainerListEntryView[]>;
+  inventoryOpen(explorerId: string, containerKey: string): Promise<ContainerView>;
+  inventorySetAmount(explorerId: string, containerKey: string, arrayIndex: number, amount: number): Promise<ContainerView>;
+  inventorySetItem(explorerId: string, containerKey: string, arrayIndex: number, itemId: string, amount: number): Promise<ContainerView>;
+  inventoryFillSlot(explorerId: string, containerKey: string, x: number, y: number, itemId: string, amount: number): Promise<ContainerView>;
+  inventoryClearSlot(explorerId: string, containerKey: string, arrayIndex: number): Promise<ContainerView>;
+  itemSearch(query: string): Promise<ItemSearchHitView[]>;
 }
 
 export type EngineRequest =
@@ -201,6 +250,13 @@ export type EngineRequest =
   | { op: 'writeExplorer'; explorerId: string }
   | { op: 'closeExplorer'; explorerId: string }
   | { op: 'survivalCheck'; root: string; mergedSlot: number; sourceSlot: number }
+  | { op: 'inventoryContainers'; explorerId: string }
+  | { op: 'inventoryOpen'; explorerId: string; containerKey: string }
+  | { op: 'inventorySetAmount'; explorerId: string; containerKey: string; arrayIndex: number; amount: number }
+  | { op: 'inventorySetItem'; explorerId: string; containerKey: string; arrayIndex: number; itemId: string; amount: number }
+  | { op: 'inventoryFillSlot'; explorerId: string; containerKey: string; x: number; y: number; itemId: string; amount: number }
+  | { op: 'inventoryClearSlot'; explorerId: string; containerKey: string; arrayIndex: number }
+  | { op: 'itemSearch'; query: string }
   // internal only (served to the renderer via the nms-icon:// protocol, never callable directly)
   | { op: 'icon'; path: string };
 
@@ -229,6 +285,13 @@ export const ENGINE_OPS: readonly EngineRequest['op'][] = [
   'writeExplorer',
   'closeExplorer',
   'survivalCheck',
+  'inventoryContainers',
+  'inventoryOpen',
+  'inventorySetAmount',
+  'inventorySetItem',
+  'inventoryFillSlot',
+  'inventoryClearSlot',
+  'itemSearch',
 ];
 
 export const API_CHANNEL = 'studio:call';

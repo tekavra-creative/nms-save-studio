@@ -16,6 +16,13 @@ import {
   explorerSearch,
   explorerSetLeaf,
   explorerUndo,
+  inventoryClearSlot,
+  inventoryContainers,
+  inventoryFillSlot,
+  inventoryOpen,
+  inventorySetAmount,
+  inventorySetItem,
+  itemSearch,
   openExplorer,
   writeExplorer,
 } from './explorer.ts';
@@ -135,6 +142,20 @@ async function handle(req: EngineRequest): Promise<unknown> {
       return closeExplorer(req.explorerId);
     case 'survivalCheck':
       return survivalCheck(req.root, req.mergedSlot, req.sourceSlot);
+    case 'inventoryContainers':
+      return inventoryContainers(req.explorerId);
+    case 'inventoryOpen':
+      return inventoryOpen(req.explorerId, req.containerKey);
+    case 'inventorySetAmount':
+      return inventorySetAmount(req.explorerId, req.containerKey, req.arrayIndex, req.amount);
+    case 'inventorySetItem':
+      return inventorySetItem(req.explorerId, req.containerKey, req.arrayIndex, req.itemId, req.amount);
+    case 'inventoryFillSlot':
+      return inventoryFillSlot(req.explorerId, req.containerKey, req.x, req.y, req.itemId, req.amount);
+    case 'inventoryClearSlot':
+      return inventoryClearSlot(req.explorerId, req.containerKey, req.arrayIndex);
+    case 'itemSearch':
+      return itemSearch(req.query);
     case 'icon':
       return iconPng(req.path, USER_DATA);
   }

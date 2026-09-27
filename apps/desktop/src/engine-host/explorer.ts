@@ -2,24 +2,69 @@ import { homedir } from 'node:os';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
+  clearSlot,
   duplicateArrayItem,
   EditSession,
+  fillSlot,
   getLeaf,
   KeyMap,
   Kind,
   listChildren,
+  readContainer,
   removeArrayItem,
   SaveFile,
+  SaveReader,
   searchTree,
   setLeaf,
+  setSlotAmount,
+  setSlotItem,
   type LeafKind,
   type LeafValue,
   type MappingFile,
   type PathStep,
 } from '@nss/engine';
 import { fingerprint, listSlots, writeSlotFile, type SlotEntry } from '@nss/io';
-import type { ExplorerStateView, LeafValueView, NodeSummaryView, PathStepView, SearchHitView, WriteResultView } from '../shared/api.ts';
+import type {
+  ContainerListEntryView,
+  ContainerView,
+  ExplorerStateView,
+  ItemSearchHitView,
+  LeafValueView,
+  NodeSummaryView,
+  PathStepView,
+  SearchHitView,
+  InvSlotView,
+  WriteResultView,
+} from '../shared/api.ts';
+import { inventoryTypeFor, maxStackForItem, resolveItem, searchItems } from './items.ts';
 import { shortPlace } from './merge.ts';
+
+/** Every container this app knows how to edit, and the readable label the picker shows. Filtered
+ * per-save to whichever of these actually exist (no freighter, no corvette, etc.). */
+const CONTAINERS: readonly { key: string; label: string; path: readonly string[]; kind: string }[] = [
+  { key: 'suit', label: 'Exosuit — General', path: ['Inventory'], kind: 'Personal' },
+  { key: 'suit-tech', label: 'Exosuit — Technology', path: ['Inventory_TechOnly'], kind: 'Personal' },
+  { key: 'suit-cargo', label: 'Exosuit — Cargo', path: ['Inventory_Cargo'], kind: 'Personal' },
+  { key: 'ship', label: 'Starship (active) — General', path: ['ShipInventory'], kind: 'Ship' },
+  { key: 'multitool', label: 'Multi-tool (active)', path: ['WeaponInventory'], kind: 'Weapon' },
+  { key: 'freighter', label: 'Freighter — General', path: ['FreighterInventory'], kind: 'Freighter' },
+  { key: 'freighter-tech', label: 'Freighter — Technology', path: ['FreighterInventory_TechOnly'], kind: 'Freighter' },
+  { key: 'freighter-cargo', label: 'Freighter — Cargo', path: ['FreighterInventory_Cargo'], kind: 'Freighter' },
+  { key: 'corvette', label: 'Corvette Storage', path: ['CorvetteStorageInventory'], kind: 'Freighter' },
+  ...Array.from({ length: 10 }, (_, i) => ({ key: `chest${i + 1}`, label: `Base Storage Container ${i + 1}`, path: [`Chest${i + 1}Inventory`], kind: 'Chest' })),
+  { key: 'chest-magic', label: 'Base Storage Container (Exotic) 1', path: ['ChestMagicInventory'], kind: 'Chest' },
+  { key: 'chest-magic-2', label: 'Base Storage Container (Exotic) 2', path: ['ChestMagic2Inventory'], kind: 'Chest' },
+  { key: 'cooking', label: 'Cooking Ingredients', path: ['CookingIngredientsInventory'], kind: 'Chest' },
+  { key: 'fish-platform', label: 'Fish Tank', path: ['FishPlatformInventory'], kind: 'Chest' },
+  { key: 'fish-bait', label: 'Bait Box', path: ['FishBaitBoxInventory'], kind: 'Chest' },
+  { key: 'food-unit', label: 'Food Processing Unit', path: ['FoodUnitInventory'], kind: 'Chest' },
+];
+
+function findContainer(key: string) {
+  const c = CONTAINERS.find((x) => x.key === key);
+  if (!c) throw new Error(`Unknown inventory container: ${key}`);
+  return c;
+}
 
 interface ExplorerSession {
   id: string;
@@ -142,4 +187,84 @@ export async function writeExplorer(id: string): Promise<WriteResultView> {
 
 export function closeExplorer(id: string): void {
   sessions.delete(id);
+}
+
+function reader(s: ExplorerSession): SaveReader {
+  return new SaveReader(s.session.doc, s.keys);
+}
+
+export async function inventoryContainers(id: string): Promise<ContainerListEntryView[]> {
+  const s = get(id);
+  const r = reader(s);
+  const out: ContainerListEntryView[] = [];
+  for (const c of CONTAINERS) {
+    const full = [...r.playerPath, ...c.path];
+    if (r.node(full) < 0) continue;
+    const view = readContainer(r, full);
+    out.push({ key: c.key, label: c.label, used: view.slots.length, capacity: view.validCells.length });
+  }
+  return out;
+}
+
+async function containerView(s: ExplorerSession, key: string): Promise<ContainerView> {
+  const c = findContainer(key);
+  const r = reader(s);
+  const raw = readContainer(r, [...r.playerPath, ...c.path]);
+  const slots: InvSlotView[] = await Promise.all(
+    raw.slots.map(async (slot): Promise<InvSlotView> => ({
+      arrayIndex: slot.arrayIndex,
+      x: slot.x,
+      y: slot.y,
+      amount: slot.amount,
+      maxAmount: slot.maxAmount,
+      item: await resolveItem(slot.id),
+    })),
+  );
+  return { key: c.key, label: c.label, width: raw.width, height: raw.height, validCells: raw.validCells, slots };
+}
+
+export async function inventoryOpen(id: string, key: string): Promise<ContainerView> {
+  return containerView(get(id), key);
+}
+
+export async function inventorySetAmount(id: string, key: string, arrayIndex: number, amount: number): Promise<ContainerView> {
+  const s = get(id);
+  const c = findContainer(key);
+  const r = reader(s);
+  s.session.apply(setSlotAmount(`Set amount`, [...r.playerPath, ...c.path], arrayIndex, amount));
+  return containerView(s, key);
+}
+
+export async function inventorySetItem(id: string, key: string, arrayIndex: number, itemId: string, amount: number): Promise<ContainerView> {
+  const s = get(id);
+  const c = findContainer(key);
+  const r = reader(s);
+  const info = await resolveItem(itemId);
+  const invType = inventoryTypeFor(info.kind);
+  const maxAmount = await maxStackForItem(itemId, c.kind);
+  s.session.apply(setSlotItem(`Set item`, [...r.playerPath, ...c.path], arrayIndex, itemId, invType, Math.min(amount, maxAmount), maxAmount));
+  return containerView(s, key);
+}
+
+export async function inventoryFillSlot(id: string, key: string, x: number, y: number, itemId: string, amount: number): Promise<ContainerView> {
+  const s = get(id);
+  const c = findContainer(key);
+  const r = reader(s);
+  const info = await resolveItem(itemId);
+  const invType = inventoryTypeFor(info.kind);
+  const maxAmount = await maxStackForItem(itemId, c.kind);
+  s.session.apply(fillSlot(`Add item`, [...r.playerPath, ...c.path], x, y, itemId, invType, Math.min(amount, maxAmount), maxAmount));
+  return containerView(s, key);
+}
+
+export async function inventoryClearSlot(id: string, key: string, arrayIndex: number): Promise<ContainerView> {
+  const s = get(id);
+  const c = findContainer(key);
+  const r = reader(s);
+  s.session.apply(clearSlot(`Remove item`, [...r.playerPath, ...c.path], arrayIndex));
+  return containerView(s, key);
+}
+
+export async function itemSearch(query: string): Promise<ItemSearchHitView[]> {
+  return searchItems(query);
 }

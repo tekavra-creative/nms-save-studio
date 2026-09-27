@@ -28,6 +28,13 @@ const api: StudioApi = {
   writeExplorer: (explorerId) => call({ op: 'writeExplorer', explorerId }),
   closeExplorer: (explorerId) => call({ op: 'closeExplorer', explorerId }),
   survivalCheck: (root, mergedSlot, sourceSlot) => call({ op: 'survivalCheck', root, mergedSlot, sourceSlot }),
+  inventoryContainers: (explorerId) => call({ op: 'inventoryContainers', explorerId }),
+  inventoryOpen: (explorerId, containerKey) => call({ op: 'inventoryOpen', explorerId, containerKey }),
+  inventorySetAmount: (explorerId, containerKey, arrayIndex, amount) => call({ op: 'inventorySetAmount', explorerId, containerKey, arrayIndex, amount }),
+  inventorySetItem: (explorerId, containerKey, arrayIndex, itemId, amount) => call({ op: 'inventorySetItem', explorerId, containerKey, arrayIndex, itemId, amount }),
+  inventoryFillSlot: (explorerId, containerKey, x, y, itemId, amount) => call({ op: 'inventoryFillSlot', explorerId, containerKey, x, y, itemId, amount }),
+  inventoryClearSlot: (explorerId, containerKey, arrayIndex) => call({ op: 'inventoryClearSlot', explorerId, containerKey, arrayIndex }),
+  itemSearch: (query) => call({ op: 'itemSearch', query }),
 };
 
 contextBridge.exposeInMainWorld('studio', api);

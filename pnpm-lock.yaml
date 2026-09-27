@@ -19,6 +19,9 @@ importers:
       '@nss/engine':
         specifier: workspace:*
         version: link:../../packages/engine
+      '@nss/gamedata':
+        specifier: workspace:*
+        version: link:../../packages/gamedata
       '@nss/io':
         specifier: workspace:*
         version: link:../../packages/io
