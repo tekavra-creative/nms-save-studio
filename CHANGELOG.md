@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-09-27 — v0.2.0: Inventory editor, notarized Mac build
+
+### Added
+- Real Inventory editor inside Raw Explorer (a "Fields"/"Inventories" tab, same session,
+  undo/redo, Write): every container the app knows how to edit (exosuit x3, active
+  ship/multi-tool, freighter x3, corvette storage, 10 base chests + 2 exotic +
+  cooking/fishing/food), real item names/icons/search from the facts pack, click to change
+  amount or item, click empty cells to add, remove to clear. Same design quality as Merge
+  Studio, verified per-skin with screenshots.
+- Real app icon (generated art, not the default Electron icon).
+
+### Fixed
+- Mac build is now actually notarized with a real Developer ID certificate, not ad-hoc signed.
+  `spctl` now says "accepted, source=Notarized Developer ID" — previously Gatekeeper warned on
+  every first launch. Also fixed a real signing bug along the way: Electron's bundled
+  Squirrel/Mantle/ReactiveObjC frameworks came out of the normal signing pass still on
+  Electron's own signature, which broke notarization until each framework BUNDLE (not just the
+  binary inside it) was re-signed individually.
+
 ## 2026-09-27 — Corvette support in Merge Studio
 
 ### Added
