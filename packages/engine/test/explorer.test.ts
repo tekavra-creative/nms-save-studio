@@ -5,12 +5,15 @@ import { describe, expect, it } from 'vitest';
 import {
   binaryToBytes,
   bytesToBinary,
+  duplicateArrayItem,
   EditSession,
   getLeaf,
   JsonDoc,
   KeyMap,
   listChildren,
+  removeArrayItem,
   SaveFile,
+  searchTree,
   setLeaf,
   type MappingFile,
 } from '../src/index.ts';
@@ -80,6 +83,49 @@ describe('explorer: generic tree browsing', () => {
     expect(() => listChildren(d, plainKeys, ['missing'])).toThrow(/path not found/);
     expect(() => listChildren(d, plainKeys, ['a'])).toThrow(/not a container/);
     expect(() => getLeaf(d, [])).toThrow(/not a leaf/);
+  });
+
+  it('duplicates an array item (object shape) as a template for a new entry, and removes it again', () => {
+    const d = doc('{"list":[{"id":1,"tag":"a"},{"id":2,"tag":"b"}]}');
+    const e = new EditSession(d, plainKeys);
+    e.apply(duplicateArrayItem('dup', ['list'], 1));
+    expect(bytesToBinary(e.bytes)).toBe('{"list":[{"id":1,"tag":"a"},{"id":2,"tag":"b"},{"id":2,"tag":"b"}]}');
+    expect(listChildren(e.doc, plainKeys, ['list'])).toHaveLength(3);
+    e.apply(removeArrayItem('rm', ['list'], 2));
+    expect(bytesToBinary(e.bytes)).toBe('{"list":[{"id":1,"tag":"a"},{"id":2,"tag":"b"}]}');
+    e.undo();
+    e.undo();
+    expect(bytesToBinary(e.bytes)).toBe('{"list":[{"id":1,"tag":"a"},{"id":2,"tag":"b"}]}');
+  });
+
+  it('duplicates the sole item into an array with one item, and into an empty array via append first', () => {
+    const d = doc('{"list":["x"]}');
+    const e = new EditSession(d, plainKeys);
+    e.apply(duplicateArrayItem('dup', ['list'], 0));
+    expect(bytesToBinary(e.bytes)).toBe('{"list":["x","x"]}');
+  });
+
+  it('search finds a match by name or by value, anywhere under the given root, across mixed kinds', () => {
+    const mapping: MappingFile = { libMBIN_version: 'test', Mapping: [{ Key: 'nmz', Value: 'DiscoveryName' }] };
+    const keys = new KeyMap(mapping, 'obfuscated');
+    const d = doc('{"a":{"nmz":"Crimson Vale","b":[{"x":1},{"x":42}]},"c":"contains crimson too"}');
+    const byName = searchTree(d, keys, [], 'discoveryname');
+    expect(byName).toEqual([{ path: ['a', 'nmz'], name: 'DiscoveryName', kind: 'string', preview: 'Crimson Vale' }]);
+
+    const byValue = searchTree(d, keys, [], 'crimson');
+    expect(byValue.map((h) => h.path)).toEqual([['a', 'nmz'], ['c']]);
+
+    const scoped = searchTree(d, keys, ['a', 'b'], '42');
+    expect(scoped).toEqual([{ path: ['a', 'b', 1, 'x'], name: 'x', kind: 'number', preview: '42' }]);
+
+    expect(searchTree(d, keys, [], '')).toEqual([]);
+    expect(searchTree(d, keys, [], 'nope-nowhere')).toEqual([]);
+  });
+
+  it('search respects a limit so a broad query on a huge tree still returns quickly', () => {
+    const items = Array.from({ length: 50 }, (_, i) => `{"v":${i}}`).join(',');
+    const d = doc(`{"list":[${items}]}`);
+    expect(searchTree(d, plainKeys, [], 'v', 5)).toHaveLength(5);
   });
 });
 

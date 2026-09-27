@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { ExplorerStateView, LeafKindView, LeafValueView, NodeSummaryView, PathStepView, WriteResultView } from '../../../shared/api.ts';
+import type { ExplorerStateView, LeafKindView, LeafValueView, NodeSummaryView, PathStepView, SearchHitView, WriteResultView } from '../../../shared/api.ts';
 import type { SkinManifest } from '../skins/types.ts';
 import './explorer.css';
 
@@ -25,17 +25,21 @@ export function RawExplorer({ skin, root, slot, onBack }: Props) {
   const [title, setTitle] = useState('');
   const [crumbs, setCrumbs] = useState<Crumb[]>([{ path: [], label: 'Save' }]);
   const [children, setChildren] = useState<NodeSummaryView[]>([]);
+  const [isArray, setIsArray] = useState(false);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<{ row: NodeSummaryView; leaf: LeafValueView; draft: string } | null>(null);
   const [writeStage, setWriteStage] = useState<'idle' | 'confirm' | 'busy'>('idle');
   const [written, setWritten] = useState<WriteResultView | null>(null);
+  const [query, setQuery] = useState('');
+  const [hits, setHits] = useState<SearchHitView[] | null>(null);
 
   const path = crumbs[crumbs.length - 1]!.path;
 
   const applyState = (s: ExplorerStateView) => {
     setChildren(s.children);
+    setIsArray(s.isArray);
     setCanUndo(s.canUndo);
     setCanRedo(s.canRedo);
   };
@@ -99,6 +103,50 @@ export function RawExplorer({ skin, root, slot, onBack }: Props) {
       .catch((e: Error) => setError(e.message));
   };
 
+  const duplicateItem = (index: number) => {
+    if (!explorerId) return;
+    window.studio.explorerDuplicateItem(explorerId, path, index).then(applyState).catch((e: Error) => setError(e.message));
+  };
+
+  const removeItem = (index: number) => {
+    if (!explorerId) return;
+    window.studio.explorerRemoveItem(explorerId, path, index).then(applyState).catch((e: Error) => setError(e.message));
+  };
+
+  const runSearch = (q: string) => {
+    setQuery(q);
+    if (!explorerId) return;
+    if (!q.trim()) {
+      setHits(null);
+      return;
+    }
+    window.studio
+      .explorerSearch(explorerId, q)
+      .then(setHits)
+      .catch((e: Error) => setError(e.message));
+  };
+
+  const jumpToHit = (hit: SearchHitView) => {
+    if (!explorerId) return;
+    const isLeaf = hit.kind !== 'object' && hit.kind !== 'array';
+    const containerPath = isLeaf ? hit.path.slice(0, -1) : hit.path;
+    window.studio
+      .explorerList(explorerId, containerPath)
+      .then((s) => {
+        applyState(s);
+        setCrumbs([{ path: [], label: 'Save' }, ...(containerPath.length ? [{ path: containerPath, label: '…' }] : [])]);
+        setHits(null);
+        setQuery('');
+        if (isLeaf) {
+          window.studio
+            .explorerGetLeaf(explorerId, hit.path)
+            .then((leaf) => setEditing({ row: { key: hit.path[hit.path.length - 1]!, name: hit.name, kind: hit.kind, childCount: -1, preview: hit.preview }, leaf, draft: leaf.value === null ? 'null' : String(leaf.value) }))
+            .catch((e: Error) => setError(e.message));
+        }
+      })
+      .catch((e: Error) => setError(e.message));
+  };
+
   const undo = () => explorerId && window.studio.explorerUndo(explorerId).then(applyState).catch((e: Error) => setError(e.message));
   const redo = () => explorerId && window.studio.explorerRedo(explorerId).then(applyState).catch((e: Error) => setError(e.message));
 
@@ -146,26 +194,63 @@ export function RawExplorer({ skin, root, slot, onBack }: Props) {
         </p>
       )}
 
-      <nav className="explorer-crumbs" aria-label="Path">
-        {crumbs.map((c, i) => (
-          <span key={i}>
-            {i > 0 && <span className="sep">/</span>}
-            <button type="button" disabled={i === crumbs.length - 1} onClick={() => go(c.path, c.label, i)}>
-              {c.label}
-            </button>
-          </span>
-        ))}
-      </nav>
+      <div className="explorer-toolbar">
+        <nav className="explorer-crumbs" aria-label="Path">
+          {crumbs.map((c, i) => (
+            <span key={i}>
+              {i > 0 && <span className="sep">/</span>}
+              <button type="button" disabled={i === crumbs.length - 1} onClick={() => go(c.path, c.label, i)}>
+                {c.label}
+              </button>
+            </span>
+          ))}
+        </nav>
+        <div className="explorer-search">
+          <input
+            type="search"
+            placeholder="Search every field in this save…"
+            value={query}
+            onChange={(e) => runSearch(e.target.value)}
+            aria-label="Search"
+          />
+          {hits && (
+            <ul className="explorer-hits" aria-label="Search results">
+              {hits.length === 0 && <li className="explorer-empty">No matches.</li>}
+              {hits.map((h, i) => (
+                <li key={i}>
+                  <button type="button" onClick={() => jumpToHit(h)}>
+                    <span className="hit-main">
+                      <span className="name">{h.name}</span>
+                      <span className="preview">{h.preview}</span>
+                    </span>
+                    <span className="hit-path">{h.path.map(String).join(' / ')}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
 
       <main className="explorer-body">
         <ul className="explorer-rows" aria-label="Fields">
-          {children.map((row) => (
+          {children.map((row, i) => (
             <li key={String(row.key)}>
               <button type="button" className={`explorer-row kind-${row.kind}`} onClick={() => openRow(row)}>
                 <span className="name">{row.name}</span>
                 <span className="kind">{row.kind === 'object' || row.kind === 'array' ? row.kind : ''}</span>
                 <span className="preview">{row.preview}</span>
               </button>
+              {isArray && (
+                <span className="explorer-row-actions">
+                  <button type="button" title="Duplicate this item" onClick={() => duplicateItem(i)}>
+                    Duplicate
+                  </button>
+                  <button type="button" title="Remove this item" onClick={() => removeItem(i)}>
+                    Remove
+                  </button>
+                </span>
+              )}
             </li>
           ))}
           {children.length === 0 && <li className="explorer-empty">Nothing here.</li>}

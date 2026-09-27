@@ -2,11 +2,15 @@ import { homedir } from 'node:os';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
+  duplicateArrayItem,
   EditSession,
   getLeaf,
   KeyMap,
+  Kind,
   listChildren,
+  removeArrayItem,
   SaveFile,
+  searchTree,
   setLeaf,
   type LeafKind,
   type LeafValue,
@@ -14,7 +18,7 @@ import {
   type PathStep,
 } from '@nss/engine';
 import { fingerprint, listSlots, writeSlotFile, type SlotEntry } from '@nss/io';
-import type { ExplorerStateView, LeafValueView, NodeSummaryView, PathStepView, WriteResultView } from '../shared/api.ts';
+import type { ExplorerStateView, LeafValueView, NodeSummaryView, PathStepView, SearchHitView, WriteResultView } from '../shared/api.ts';
 import { shortPlace } from './merge.ts';
 
 interface ExplorerSession {
@@ -50,6 +54,7 @@ function view(s: ExplorerSession): ExplorerStateView {
     canUndo: s.session.canUndo,
     canRedo: s.session.canRedo,
     path: s.path as PathStepView[],
+    isArray: s.session.doc.kind(s.session.doc.at(s.path)) === Kind.Array,
     children: listChildren(s.session.doc, s.keys, s.path).map(toNodeView),
   };
 }
@@ -87,6 +92,23 @@ export function explorerSetLeaf(id: string, path: PathStepView[], kind: LeafValu
   const name = `Edit ${path[path.length - 1]}`;
   s.session.apply(setLeaf(name, path as PathStep[], kind as LeafKind, raw));
   return view(s);
+}
+
+export function explorerDuplicateItem(id: string, arrayPath: PathStepView[], index: number): ExplorerStateView {
+  const s = get(id);
+  s.session.apply(duplicateArrayItem(`Duplicate item ${index}`, arrayPath as PathStep[], index));
+  return view(s);
+}
+
+export function explorerRemoveItem(id: string, arrayPath: PathStepView[], index: number): ExplorerStateView {
+  const s = get(id);
+  s.session.apply(removeArrayItem(`Remove item ${index}`, arrayPath as PathStep[], index));
+  return view(s);
+}
+
+export function explorerSearch(id: string, query: string): SearchHitView[] {
+  const s = get(id);
+  return searchTree(s.session.doc, s.keys, [], query).map((h) => ({ path: h.path as PathStepView[], name: h.name, kind: h.kind, preview: h.preview }));
 }
 
 export function explorerUndo(id: string): ExplorerStateView {

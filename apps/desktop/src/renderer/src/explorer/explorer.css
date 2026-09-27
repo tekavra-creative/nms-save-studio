@@ -25,14 +25,91 @@
   padding: 8px 14px;
   cursor: pointer;
 }
+.explorer-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 22px;
+  flex-shrink: 0;
+}
 .explorer-crumbs {
-  padding: 10px 22px;
+  padding: 10px 0;
   font: 500 13px/1 var(--ui, system-ui);
   color: var(--text);
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
+}
+.explorer-search {
+  position: relative;
+  width: 260px;
+}
+.explorer-search input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 10px;
+  border-radius: 7px;
+  border: 1px solid color-mix(in oklch, var(--text) 20%, transparent);
+  background: color-mix(in oklch, var(--text) 5%, transparent);
+  color: var(--text);
+  font: 400 13px var(--ui, system-ui);
+}
+.explorer-hits {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 4px);
+  right: 0;
+  width: 340px;
+  max-height: 320px;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in oklch, var(--text) 20%, transparent);
+  background: Canvas;
+  box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.4);
+}
+.explorer-hits button {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: var(--text);
+  font: 400 12px var(--ui, system-ui);
+  text-align: left;
+  cursor: pointer;
+}
+.explorer-hits button:hover {
+  background: color-mix(in oklch, var(--text) 10%, transparent);
+}
+.explorer-hits .hit-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.explorer-hits .name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.explorer-hits .preview {
+  opacity: 0.7;
   flex-shrink: 0;
+}
+.explorer-hits .hit-path {
+  opacity: 0.5;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .explorer-crumbs .sep {
   margin: 0 6px;
@@ -70,19 +147,45 @@
   border: 1px solid color-mix(in oklch, var(--text) 14%, transparent);
   border-radius: 10px;
 }
+.explorer-rows li {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid color-mix(in oklch, var(--text) 8%, transparent);
+}
 .explorer-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 70px minmax(0, 220px);
   gap: 12px;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   padding: 8px 14px;
   border: 0;
-  border-bottom: 1px solid color-mix(in oklch, var(--text) 8%, transparent);
   background: none;
   color: var(--text);
   font: 400 13px/1.4 var(--ui, system-ui);
   text-align: left;
   cursor: pointer;
+}
+.explorer-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 10px;
+  flex-shrink: 0;
+}
+.explorer-row-actions button {
+  font: 500 11px var(--ui, system-ui);
+  padding: 4px 8px;
+  border-radius: 5px;
+  border: 1px solid color-mix(in oklch, var(--text) 18%, transparent);
+  background: none;
+  color: var(--text);
+  opacity: 0.7;
+  cursor: pointer;
+}
+.explorer-row-actions button:hover {
+  opacity: 1;
+  background: color-mix(in oklch, var(--text) 8%, transparent);
 }
 .explorer-row:hover {
   background: color-mix(in oklch, var(--text) 6%, transparent);

@@ -1,4 +1,4 @@
-import { binaryToDisplay, JsonDoc } from './cst/doc.ts';
+import { binaryToBytes, binaryToDisplay, concatBytes, JsonDoc } from './cst/doc.ts';
 import { EditError, literal, type Op, type PathStep } from './edit.ts';
 import { Kind } from './cst/scan.ts';
 import type { KeyMap } from './keys/mapping.ts';
@@ -120,4 +120,64 @@ export function setLeaf(label: string, path: readonly PathStep[], kind: LeafKind
       return [{ start: doc.tree.start[node]!, end: doc.tree.end[node]!, bytes }];
     },
   };
+}
+
+/**
+ * Duplicate an existing array item and append the copy at the end — the safe way to "add" a new
+ * item when nothing here knows the shape a blank one should have (an inventory slot, a discovery
+ * entry, a base object all have different shapes). The person edits the copy's fields afterward.
+ */
+export function duplicateArrayItem(label: string, arrayPath: readonly PathStep[], index: number): Op {
+  return {
+    label,
+    compile(doc) {
+      const arr = resolvePlain(doc, arrayPath);
+      if (doc.kind(arr) !== Kind.Array) throw new EditError(`not an array: ${arrayPath.join('/')}`);
+      const item = doc.child(arr, index);
+      if (item < 0) throw new EditError(`no item ${index} in ${arrayPath.join('/')}`);
+      const bytes = doc.span(item).slice();
+      const close = doc.tree.end[arr]! - 1;
+      const sep = doc.childCount(arr) > 0 ? binaryToBytes(',') : new Uint8Array(0);
+      return [{ start: close, end: close, bytes: concatBytes([sep, bytes]) }];
+    },
+  };
+}
+
+export interface SearchHit {
+  path: PathStep[];
+  name: string;
+  kind: NodeSummary['kind'];
+  preview: string;
+}
+
+/**
+ * Depth-first search for object keys or leaf values whose text contains `query` (case-insensitive).
+ * Bounded by `limit` so a broad query on a huge save still returns quickly. Schema-agnostic: it
+ * walks whatever is actually there, matching on the mapped name (or raw key) and the leaf preview.
+ */
+export function searchTree(doc: JsonDoc, keys: KeyMap, from: readonly PathStep[], query: string, limit = 200): SearchHit[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  const out: SearchHit[] = [];
+  const root = from.length === 0 ? doc.root : resolvePlain(doc, from);
+
+  function walk(node: number, path: PathStep[]): void {
+    if (out.length >= limit) return;
+    const kind = doc.kind(node);
+    if (kind !== Kind.Object && kind !== Kind.Array) return;
+    let i = 0;
+    for (const child of doc.children(node)) {
+      if (out.length >= limit) return;
+      const key = kind === Kind.Array ? i++ : doc.key(child)!;
+      const s = summarize(doc, child, key, keys);
+      const childPath = [...path, key];
+      if (s.name.toLowerCase().includes(q) || s.preview.toLowerCase().includes(q)) {
+        out.push({ path: childPath, name: s.name, kind: s.kind, preview: s.preview });
+      }
+      walk(child, childPath);
+    }
+  }
+
+  walk(root, [...from]);
+  return out;
 }

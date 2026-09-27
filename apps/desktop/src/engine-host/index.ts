@@ -6,7 +6,19 @@ import mappingFallback from '../../../../packages/engine/src/keys/mapping.fallba
 import { findSaveRoots, isGameRunning, listSlots } from '@nss/io';
 import type { EngineRequest, OverviewView, SlotView } from '../shared/api.ts';
 import { applyChanges, closeMerge, openMerge, redo, revertChange, setCurrencyMode, undo, writeMerge } from './merge.ts';
-import { closeExplorer, explorerGetLeaf, explorerList, explorerRedo, explorerSetLeaf, explorerUndo, openExplorer, writeExplorer } from './explorer.ts';
+import {
+  closeExplorer,
+  explorerDuplicateItem,
+  explorerGetLeaf,
+  explorerList,
+  explorerRedo,
+  explorerRemoveItem,
+  explorerSearch,
+  explorerSetLeaf,
+  explorerUndo,
+  openExplorer,
+  writeExplorer,
+} from './explorer.ts';
 import { iconPng } from './icons.ts';
 import { toOverviewView } from './views.ts';
 
@@ -86,6 +98,12 @@ async function handle(req: EngineRequest): Promise<unknown> {
       return explorerGetLeaf(req.explorerId, req.path);
     case 'explorerSetLeaf':
       return explorerSetLeaf(req.explorerId, req.path, req.kind, req.raw);
+    case 'explorerDuplicateItem':
+      return explorerDuplicateItem(req.explorerId, req.arrayPath, req.index);
+    case 'explorerRemoveItem':
+      return explorerRemoveItem(req.explorerId, req.arrayPath, req.index);
+    case 'explorerSearch':
+      return explorerSearch(req.explorerId, req.query);
     case 'explorerUndo':
       return explorerUndo(req.explorerId);
     case 'explorerRedo':

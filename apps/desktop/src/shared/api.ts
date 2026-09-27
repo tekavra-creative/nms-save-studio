@@ -114,6 +114,13 @@ export interface LeafValueView {
   value: string | number | boolean | null;
 }
 
+export interface SearchHitView {
+  path: PathStepView[];
+  name: string;
+  kind: 'object' | 'array' | LeafKindView;
+  preview: string;
+}
+
 export interface ExplorerStateView {
   explorerId: string;
   root: string;
@@ -123,6 +130,8 @@ export interface ExplorerStateView {
   canRedo: boolean;
   /** The path just browsed/edited (for the caller's own confirmation — the app tracks its own breadcrumb). */
   path: PathStepView[];
+  /** Whether the container AT `path` is an array (its rows can be duplicated/removed) or an object. */
+  isArray: boolean;
   children: NodeSummaryView[];
 }
 
@@ -143,6 +152,9 @@ export interface StudioApi {
   explorerList(explorerId: string, path: PathStepView[]): Promise<ExplorerStateView>;
   explorerGetLeaf(explorerId: string, path: PathStepView[]): Promise<LeafValueView>;
   explorerSetLeaf(explorerId: string, path: PathStepView[], kind: LeafKindView, raw: string): Promise<ExplorerStateView>;
+  explorerDuplicateItem(explorerId: string, arrayPath: PathStepView[], index: number): Promise<ExplorerStateView>;
+  explorerRemoveItem(explorerId: string, arrayPath: PathStepView[], index: number): Promise<ExplorerStateView>;
+  explorerSearch(explorerId: string, query: string): Promise<SearchHitView[]>;
   explorerUndo(explorerId: string): Promise<ExplorerStateView>;
   explorerRedo(explorerId: string): Promise<ExplorerStateView>;
   writeExplorer(explorerId: string): Promise<WriteResultView>;
@@ -166,6 +178,9 @@ export type EngineRequest =
   | { op: 'explorerList'; explorerId: string; path: PathStepView[] }
   | { op: 'explorerGetLeaf'; explorerId: string; path: PathStepView[] }
   | { op: 'explorerSetLeaf'; explorerId: string; path: PathStepView[]; kind: LeafKindView; raw: string }
+  | { op: 'explorerDuplicateItem'; explorerId: string; arrayPath: PathStepView[]; index: number }
+  | { op: 'explorerRemoveItem'; explorerId: string; arrayPath: PathStepView[]; index: number }
+  | { op: 'explorerSearch'; explorerId: string; query: string }
   | { op: 'explorerUndo'; explorerId: string }
   | { op: 'explorerRedo'; explorerId: string }
   | { op: 'writeExplorer'; explorerId: string }
@@ -190,6 +205,9 @@ export const ENGINE_OPS: readonly EngineRequest['op'][] = [
   'explorerList',
   'explorerGetLeaf',
   'explorerSetLeaf',
+  'explorerDuplicateItem',
+  'explorerRemoveItem',
+  'explorerSearch',
   'explorerUndo',
   'explorerRedo',
   'writeExplorer',
