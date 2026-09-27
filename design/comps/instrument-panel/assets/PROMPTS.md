@@ -1,0 +1,31 @@
+# Drydock — Instrument Panel — art log
+
+Every image here was generated for this comp through **imagen.tekavra.com** — original art, no game screenshots or icons.
+
+- Provider: `cfwa` (Cloudflare Workers AI, Flux Schnell), quality `premium` (8 steps), 1024×1024. **Free tier — no paid calls.**
+- `recraft` (the SVG provider) is not configured on the Imagen worker (`RECRAFT_API_KEY secret not configured`), so every glyph and ship was generated as a black-on-white raster and **vectorised locally** by `design/comps/_tools/trace.py` (`bash design/comps/_tools/trace-all.sh` re-runs it).
+- Trace modes for this direction: glyphs `mono --stroke 0.07 --square`, ships `mono --stroke 0.008`. The mode is what makes separately generated images read as one family (same stroke weight / same fill logic).
+- The traced SVGs are inlined into `index.html` as `<symbol>`s by `design/comps/_tools/assemble.py`, so they recolour from CSS (`currentColor`).
+- Wordmark marks are hand-drawn SVG in `index.html`, not generated.
+- Flux on Workers AI ignores `seed`, so re-running a prompt gives a new variation, not the same image.
+
+| Output (raw → used) | Imagen id | Tries | Prompt |
+|---|---|---|---|
+| `raw/bg-limb-a.jpg` → `assets/bg-canopy.jpg` — canopy behind the hangar bays (as generated) | `gen_vLZVgKgGb4cUmhSz4FEIeg` | 1 | the curved dark limb of an alien planet seen from orbit at night, a thin cyan atmospheric line along the horizon, sparse faint stars, deep graphite black space, calm, minimal, cinematic, no text |
+| `raw/glyph-freighter.jpg` → `assets/glyph-freighter.svg` | `gen_XIyW2YhicsWi-paNScSI7A` | 3 | a long cargo spaceship with a tall tower, seen from the side, extremely simple minimalist line icon, very few lines, geometric outline drawing, bold even black lines on a white background, centered, generous margin, flat, no detail, no text |
+| `raw/glyph-starship.jpg` → `assets/glyph-starship.svg` | `gen_0mNHVDoEso9Z8CwLO_tI2A` | 2 | a small spaceship seen from the side, extremely simple minimalist line icon, very few lines, geometric outline drawing, bold even black lines on a white background, centered, generous margin, flat, no detail, no text |
+| `raw/glyph-words.jpg` → `assets/glyph-words.svg` | `gen_lfcs0Rl1fwXf3f0sP0V2pQ` | 2 | minimalist line icon of a speech bubble with three dots inside, geometric outline drawing, bold even black lines on a white background, technical display symbol, centered, generous margin, flat, no text |
+| `raw/glyph-exocraft.jpg` → `assets/glyph-exocraft.svg` | `gen_YHxWGRZD2Dfwb5Cb5SLpTQ` | 2 | a rover vehicle with three big round wheels, seen from the side, extremely simple minimalist line icon, very few lines, geometric outline drawing, bold even black lines on a white background, centered, generous margin, flat, no detail, no text |
+| `raw/ship-fighter.jpg` → `assets/ship-fighter.svg` | `gen_ECT3-lfiQYJVPRIC9jBReQ` | 1 | side-view profile of a sci-fi fighter spaceship with swept forward wings and a small cockpit, technical blueprint line drawing, clean black outline and a few panel lines, pure white background, centered, horizontal, flat, no shading, no text |
+| `raw/glyph-multitool.jpg` → `assets/glyph-multitool.svg` | `gen_KWBbx2pOXOsK1lbN0NjDlg` | 1 | single icon of a compact handheld sci-fi scanning tool, like a futuristic pistol-shaped multitool, simple geometric line pictogram, uniform thick black outline strokes, technical avionics display symbol, pure white background, centered, generous margin, flat, no shading, no text |
+| `raw/glyph-blueprint.jpg` → `assets/glyph-blueprint.svg` | `gen_loIQxtDOGiC6UaA2NtZM3g` | 1 | single icon of a rolled technical blueprint scroll with a gear, simple geometric line pictogram, uniform thick black outline strokes, technical avionics display symbol, pure white background, centered, generous margin, flat, no shading, no text |
+| `raw/ship-hauler.jpg` → `assets/ship-hauler.svg` | `gen_aCDcB4GNBljc8RRsYi5VuA` | 1 | side-view profile of a sci-fi heavy cargo hauler spaceship, boxy and long with large engines, technical blueprint line drawing, clean black outline and a few panel lines, pure white background, centered, horizontal, flat, no shading, no text |
+| `raw/ship-living.jpg` → `assets/ship-living.svg` | `gen_U4gYsJAcbDWsiG_VmEWyiQ` | 1 | side-view profile of a sci-fi organic living spaceship shaped like a biological creature with curved ribs and tendrils, technical blueprint line drawing, clean black outline and a few panel lines, pure white background, centered, horizontal, flat, no shading, no text |
+| `raw/glyph-base.jpg` → `assets/glyph-base.svg` | `gen_1MMwayNOo1Kd8_ZPjD7yOA` | 2 | a small outpost building with a rounded roof and an antenna mast, front view, extremely simple minimalist line icon, very few lines, geometric outline drawing, black lines on a white background, centered, flat, no text |
+| `raw/ship-explorer.jpg` → `assets/ship-explorer.svg` | `gen_XCQH19YLBeiDfc8UVKRQcw` | 1 | side-view profile of a sci-fi scout spacecraft with a slim fuselage and sensor antennas, technical blueprint line drawing, clean black outline and a few panel lines, pure white background, centered, horizontal, flat, no text |
+| `raw/bg-limb-b.jpg` → `— (discarded; file not kept)` | `gen_4KuugiyeeU_cqkeiOz1nIA` | 1 | the curved dark limb of an alien planet seen from orbit at night, a thin cyan atmospheric line along the horizon, sparse faint stars, deep graphite black space, calm, minimal, cinematic, no text |
+| `raw/glyph-currency.jpg` → `assets/glyph-currency.svg` | `gen_pORXM_OHJCf5AuYOdC124g` | 1 | minimalist line icon of a hexagonal gemstone, geometric outline drawing, black lines on a white background, centered, flat, no text |
+| `raw/glyph-companion.jpg` → `assets/glyph-companion.svg` | `gen_JLvB8CPh1iER-0bv5wmDkg` | 1 | minimalist line icon of a small fox with two antennae on its head, side view, geometric outline drawing, black lines on a white background, centered, flat, no text |
+
+Successful calls logged for this direction: **21** (cfwa, $0 billed — the worker records a nominal ~$0.004 neuron estimate each).
+Some prompts were reworded after Workers AI’s safety filter falsely flagged harmless words (e.g. a companion creature, a dome); the table shows the prompt that produced the file in use.

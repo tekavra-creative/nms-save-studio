@@ -1,0 +1,1117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parhelion · Merge Studio</title>
+<meta name="description" content="Design comp — Quiet Cosmos direction for the NMS Save Studio merge screen.">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0f1a24">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600&family=Unbounded:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   PARHELION — Quiet Cosmos direction
+   A parhelion is a "sun dog": the second, softer sun that appears beside the real one.
+   Two saves, side by side in the same light. Lots of empty space (Ma); one warm light.
+   Colour grammar:
+     sky (cool aqua)  = can be lifted / interactive
+     sun (warm peach) = staged — the only warm light on screen, and it pools on Write
+     mint             = written to disk
+   Type: Unbounded (wide, soft, light weights) for the big quiet numbers and names,
+   Albert Sans for everything you read.
+   Flow is vertical: the other save floats in an orbit below; you lift things *up* into yours.
+   ========================================================================== */
+:root {
+  --void:     oklch(17% 0.035 235);
+  --glass:    oklch(100% 0 0 / .065);
+  --glass-2:  oklch(100% 0 0 / .11);
+  --glass-3:  oklch(100% 0 0 / .16);
+  --edge:     oklch(100% 0 0 / .13);
+  --edge-2:   oklch(100% 0 0 / .24);
+  --text:     oklch(97% 0.008 230);
+  --text-2:   oklch(86% 0.02 225);
+  --text-3:   oklch(76% 0.025 225);
+  --sky:      oklch(87% 0.075 205);
+  --sky-a:    oklch(87% 0.075 205 / .16);
+  --sun:      oklch(87% 0.105 62);
+  --sun-a:    oklch(87% 0.105 62 / .18);
+  --sun-glow: oklch(84% 0.13 60 / .45);
+  --sun-ink:  oklch(28% 0.06 50);
+  --mint:     oklch(88% 0.1 165);
+  --display: "Unbounded", ui-rounded, system-ui, sans-serif;
+  --ui: "Albert Sans", ui-sans-serif, system-ui, sans-serif;
+  --r-xl: 28px; --r-lg: 20px; --r-md: 14px;
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  color-scheme: dark;
+}
+@media (color-gamut: p3) { :root { --sun: oklch(87% 0.13 62); --sky: oklch(87% 0.1 205); } }
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  color: var(--text); font: 15px/1.45 var(--ui); overflow: hidden; -webkit-font-smoothing: antialiased;
+  background:
+    linear-gradient(180deg, oklch(13% 0.03 240 / .72) 0%, oklch(13% 0.03 240 / .38) 45%, oklch(12% 0.03 240 / .7) 100%),
+    url("assets/bg-nebula.jpg") 70% 40% / cover no-repeat,
+    var(--void);
+}
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.list, .p-body, .entries, .clist, .ch-list, .cmdk-list { overscroll-behavior: contain; }
+
+kbd { font: 500 11.5px/1 var(--ui); padding: 3px 6px; border-radius: 6px; background: var(--glass-2); border: 1px solid var(--edge); color: var(--text-2); }
+:focus-visible { outline: 2px solid var(--sky); outline-offset: 3px; border-radius: 10px; }
+.num { font-variant-numeric: tabular-nums; }
+.glass {
+  background: linear-gradient(180deg, oklch(27% 0.035 232 / .56), oklch(19% 0.035 236 / .5));
+  border: 1px solid var(--edge); border-top-color: var(--edge-2);
+  backdrop-filter: blur(28px) saturate(140%); -webkit-backdrop-filter: blur(26px) saturate(150%);
+  box-shadow: 0 30px 60px -30px oklch(8% 0.03 240 / .8);
+}
+
+/* ---------- shell ---------- */
+.app { display: grid; grid-template-rows: 64px minmax(0, 1fr); height: 100vh; }
+.top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 22px 0 90px; position: relative; -webkit-app-region: drag; }
+.top button { -webkit-app-region: no-drag; }
+.lights { position: absolute; left: 20px; top: 50%; translate: 0 -50%; display: flex; gap: 8px; }
+.lights i { width: 12px; height: 12px; border-radius: 50%; display: block; background: oklch(100% 0 0 / .22); }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand svg { width: 38px; height: 22px; }
+.brand .word { font: 300 20px/1 var(--display); letter-spacing: .02em; }
+.brand .sub { font-size: 12.5px; color: var(--text-3); margin-left: 2px; }
+.cats { display: flex; gap: 4px; padding: 5px; border-radius: 999px; }
+.cat { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 15px 0 11px; border-radius: 999px; color: var(--text-3); font-weight: 500; font-size: 14px; transition: background .2s, color .2s; white-space: nowrap; }
+.cat svg { width: 19px; height: 19px; }
+.cat:hover { color: var(--text); background: var(--glass); }
+.cat[aria-current="true"] { color: var(--text); background: var(--glass-3); box-shadow: inset 0 1px 0 oklch(100% 0 0 / .18); }
+.cat[aria-current="true"] svg { color: var(--sky); }
+.search { justify-self: end; display: flex; align-items: center; gap: 22px; height: 38px; padding: 0 7px 0 16px; border-radius: 999px; color: var(--text-3); font-size: 14px; transition: color .2s, border-color .2s; }
+.search:hover { color: var(--text); border-color: var(--edge-2); }
+
+.stage { display: grid; grid-template-columns: minmax(0, 1fr) 344px; grid-template-rows: minmax(0, 1fr) auto; gap: 18px; padding: 6px 22px 22px; min-height: 0; }
+
+/* ---------- hero: your save ---------- */
+.hero { grid-area: 1 / 1; border-radius: var(--r-xl); padding: 26px 30px 26px; display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 22px; min-height: 0; min-width: 0; position: relative; transition: box-shadow .3s var(--ease-out); }
+.hero.is-drop-ready { box-shadow: 0 30px 60px -30px oklch(8% 0.03 240 / .8), 0 0 0 1px oklch(87% 0.105 62 / .35), 0 0 60px -10px var(--sun-glow); }
+.h-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px; align-items: start; }
+.eyebrow { display: flex; align-items: center; gap: 12px; color: var(--text-3); font-size: 13.5px; }
+.toggle { display: inline-flex; padding: 3px; border-radius: 999px; background: oklch(0% 0 0 / .18); border: 1px solid var(--edge); }
+.toggle button { padding: 5px 12px; border-radius: 999px; font-size: 13px; color: var(--text-3); transition: background .2s, color .2s; white-space: nowrap; }
+.toggle button:hover { color: var(--text); }
+.toggle button[aria-checked="true"] { background: var(--glass-3); color: var(--text); }
+.name { margin: 12px 0 8px; font: 300 46px/1.02 var(--display); letter-spacing: -.02em; text-wrap: balance; }
+.name .dim { color: var(--text-3); }
+.meta { margin: 0; color: var(--text-2); font-size: 14.5px; }
+.meta span + span::before { content: "·"; margin: 0 8px; color: var(--text-3); }
+
+.gauge { display: grid; grid-template-columns: auto auto; gap: 16px; align-items: center; }
+.ring { width: 118px; height: 118px; position: relative; }
+.ring svg { width: 100%; height: 100%; overflow: visible; }
+.ring .seg { fill: none; stroke-width: 7; stroke-linecap: round; stroke: oklch(100% 0 0 / .12); transition: stroke .3s; }
+.ring .seg.on { stroke: var(--sky); }
+.ring .seg.staged { stroke: var(--sun); filter: drop-shadow(0 0 5px var(--sun-glow)); }
+.ring .seg.is-new { animation: segin .9s var(--ease-out); }
+@keyframes segin { from { stroke-width: 14; stroke: oklch(98% 0.03 70); } }
+.ring .c { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+.ring .big { font: 300 38px/1 var(--display); letter-spacing: -.03em; }
+.ring .of { font-size: 12.5px; color: var(--text-3); margin-top: 4px; }
+.g-side { display: grid; gap: 10px; min-width: 150px; }
+.g-row { display: grid; grid-template-columns: 20px 1fr auto; gap: 8px; align-items: center; font-size: 13.5px; color: var(--text-2); }
+.g-row svg { width: 17px; height: 17px; color: var(--text-3); }
+.g-row b { font-weight: 500; color: var(--text); }
+.g-row b.up { color: var(--sun); }
+
+.bay-area { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 12px; min-height: 0; }
+.bay-cap { display: flex; justify-content: space-between; color: var(--text-3); font-size: 13.5px; }
+.berths { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 14px; min-height: 0; }
+.berths[data-cat="tools"] { grid-template-rows: minmax(0, 190px); }
+.berths[data-cat="pets"] { grid-template-columns: repeat(10, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 64px)); gap: 8px; }
+.card {
+  position: relative; border-radius: var(--r-lg); padding: 14px 14px 13px; min-width: 0; min-height: 0;
+  display: grid; grid-template-rows: minmax(0, 1fr) auto auto; gap: 3px; text-align: left;
+  background: linear-gradient(180deg, oklch(100% 0 0 / .10), oklch(100% 0 0 / .05)); border: 1px solid var(--edge); border-top-color: var(--edge-2);
+}
+.card .art { width: 100%; height: 100%; min-height: 0; color: var(--text); filter: drop-shadow(0 6px 10px oklch(8% 0.03 240 / .5)); }
+.card b { font-weight: 500; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card span.s { font-size: 12.5px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .pip { position: absolute; top: 10px; right: 10px; font-size: 11.5px; font-weight: 600; padding: 3px 8px; border-radius: 999px; }
+.card.is-staged { border-color: oklch(87% 0.105 62 / .5); background: linear-gradient(180deg, oklch(87% 0.105 62 / .16), oklch(87% 0.105 62 / .05)); box-shadow: 0 0 30px -12px var(--sun-glow); }
+.card.is-staged .art { color: var(--sun); }
+.card.is-staged .pip { background: var(--sun); color: var(--sun-ink); }
+.card.is-empty { background: none; border: 1.5px dashed oklch(100% 0 0 / .12); display: grid; place-items: center; grid-template-rows: 1fr; }
+.card.is-empty .open { font-size: 12.5px; color: var(--text-3); }
+.card[data-next-slot] { border-color: oklch(100% 0 0 / .22); }
+.card .here { display: none; }
+.hero.is-drop-ready .card[data-next-slot] { border: 1.5px solid var(--sun); background: radial-gradient(closest-side, oklch(87% 0.105 62 / .22), transparent); animation: breathe 1.6s ease-in-out infinite; }
+.hero.is-drop-ready .card[data-next-slot] .nf { display: none; }
+.hero.is-drop-ready .card[data-next-slot] .here { display: inline; color: var(--sun); opacity: 1; }
+@keyframes breathe { 50% { box-shadow: 0 0 34px -4px var(--sun-glow); } }
+.card.is-arriving::after { content: ""; position: absolute; inset: -2px; border-radius: inherit; pointer-events: none; box-shadow: 0 0 0 2px var(--sun), 0 0 40px 6px var(--sun-glow); animation: halo 1.1s var(--ease-out) forwards; }
+@keyframes halo { from { transform: scale(.94); opacity: 1; } to { transform: scale(1.18); opacity: 0; } }
+.berths[data-cat="pets"] .card { grid-template-rows: auto auto; align-content: center; padding: 8px 10px; border-radius: 12px; }
+.berths[data-cat="pets"] .card .art, .berths[data-cat="pets"] .card .pip { display: none; }
+.berths[data-cat="pets"] .card b { font-size: 13px; }
+.berths[data-cat="pets"] .card span.s { font-size: 11px; }
+
+.rows { display: grid; gap: 10px; align-content: start; }
+.vrow { display: grid; grid-template-columns: 28px 1.1fr 1fr 1.2fr auto; gap: 16px; align-items: center; padding: 16px 18px; border-radius: var(--r-md); background: var(--glass); border: 1px solid var(--edge); }
+.vrow svg { width: 22px; height: 22px; color: var(--text-2); }
+.vrow .k { font-weight: 500; }
+.vrow .v { font: 300 20px/1 var(--display); letter-spacing: -.01em; white-space: nowrap; }
+.vrow .v small { display: block; font: 12px/1.3 var(--ui); color: var(--text-3); letter-spacing: 0; margin-top: 4px; }
+.vrow .v.up { color: var(--sun); }
+.pill { height: 34px; padding: 0 16px; border-radius: 999px; font-weight: 500; font-size: 13.5px; border: 1px solid oklch(87% 0.075 205 / .5); color: var(--sky); transition: background .2s, color .2s; white-space: nowrap; }
+.pill:hover { background: var(--sky); color: var(--void); }
+.pill.is-staged { border-color: transparent; background: var(--sun-a); color: var(--sun); cursor: default; display: inline-flex; align-items: center; }
+.pill.is-none { border-color: var(--edge); color: var(--text-3); cursor: default; display: inline-flex; align-items: center; }
+
+/* ---------- orbit: the other save ---------- */
+.orbit { grid-area: 2 / 1; border-radius: var(--r-xl); padding: 16px 20px 18px; display: grid; grid-template-rows: auto auto; gap: 12px; min-width: 0; }
+.o-head { display: flex; align-items: baseline; gap: 14px; }
+.o-head h2 { margin: 0; font: 300 19px/1 var(--display); letter-spacing: -.01em; }
+.o-head .from { color: var(--text-3); font-size: 13.5px; }
+.o-head .ro { margin-left: auto; color: var(--text-3); font-size: 13px; display: inline-flex; gap: 6px; align-items: center; }
+.o-head .ro svg { width: 13px; height: 13px; }
+.tiles { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+.tile {
+  position: relative; height: 142px; border-radius: var(--r-lg); padding: 12px 13px 12px; min-width: 0;
+  display: grid; grid-template-rows: minmax(0, 1fr) auto auto; gap: 2px; text-align: left; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
+  background: linear-gradient(180deg, oklch(100% 0 0 / .09), oklch(100% 0 0 / .04)); border: 1px solid var(--edge); border-top-color: var(--edge-2);
+  transition: transform .25s var(--ease-out), background .2s, border-color .2s, opacity .25s, box-shadow .25s;
+}
+.tile .art { width: 100%; height: 100%; min-height: 0; color: var(--sky); filter: drop-shadow(0 6px 10px oklch(8% 0.03 240 / .5)); }
+.tile b { font-weight: 500; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile span.s { font-size: 12.5px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile:hover { transform: translateY(-4px); background: linear-gradient(180deg, oklch(100% 0 0 / .14), oklch(100% 0 0 / .06)); border-color: oklch(87% 0.075 205 / .45); box-shadow: 0 16px 30px -18px oklch(87% 0.075 205 / .5); }
+.tile:hover .lift, .tile:focus-visible .lift { opacity: 1; transform: none; }
+.tile.is-pressed { transform: translateY(-2px) scale(.98); }
+.tile.is-drag-source { opacity: .3; transform: none; border-style: dashed; box-shadow: none; }
+.tile.is-drag-source .lift { opacity: 0; }
+.tile.is-returning { animation: returned .8s var(--ease-out); }
+@keyframes returned { from { box-shadow: 0 0 0 1.5px var(--sky), 0 0 30px -4px oklch(87% 0.075 205 / .5); } }
+.tile.is-refused { animation: refuse .45s var(--ease-out); }
+@keyframes refuse { 20% { transform: translateX(-5px); } 45% { transform: translateX(4px); } 70% { transform: translateX(-2px); } }
+.tile[aria-disabled="true"] { cursor: default; }
+.tile[aria-disabled="true"]:hover { transform: none; box-shadow: none; border-color: var(--edge); }
+.tile[aria-disabled="true"] .art, .tile[aria-disabled="true"] b { opacity: .45; }
+.lift { position: absolute; top: 9px; right: 10px; font-size: 11.5px; font-weight: 600; color: var(--sky); opacity: 0; transform: translateY(3px); transition: opacity .2s, transform .25s var(--ease-out); pointer-events: none; }
+.tag { position: absolute; top: 9px; right: 10px; font-size: 11.5px; font-weight: 600; padding: 3px 8px; border-radius: 999px; }
+.tag.staged { background: var(--sun); color: var(--sun-ink); }
+.tag.present { background: oklch(88% 0.1 165 / .18); color: var(--mint); }
+.o-note { grid-column: 1 / -1; margin: 0; font-size: 13px; color: var(--text-3); }
+.vals { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.val { border-radius: var(--r-md); padding: 14px 16px; background: var(--glass); border: 1px solid var(--edge); display: grid; gap: 4px; }
+.val .k { font-size: 13px; color: var(--text-3); display: flex; gap: 8px; align-items: center; }
+.val .k svg { width: 16px; height: 16px; }
+.val .v { font: 300 20px/1 var(--display); letter-spacing: -.01em; }
+
+/* ---------- changes ---------- */
+.changes { grid-area: 1 / 2 / 3 / 3; border-radius: var(--r-xl); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; min-height: 0; overflow: hidden; }
+.c-head { padding: 24px 24px 14px; }
+.c-head h2 { margin: 0; display: flex; align-items: baseline; gap: 12px; font: 300 26px/1 var(--display); letter-spacing: -.02em; }
+.c-head h2 .n { font-size: 26px; color: var(--sun); }
+.c-head h2 .n.zero { color: var(--text-3); }
+.c-head p { margin: 8px 0 0; color: var(--text-3); font-size: 13.5px; }
+.clist { list-style: none; margin: 0; padding: 4px 14px; overflow: auto; min-height: 0; display: grid; gap: 8px; align-content: start; scrollbar-width: thin; scrollbar-color: var(--edge-2) transparent; }
+.ch { display: grid; grid-template-columns: 34px minmax(0, 1fr) 32px; gap: 12px; align-items: start; padding: 13px 10px 13px 12px; border-radius: 16px; background: oklch(100% 0 0 / .05); border: 1px solid oklch(100% 0 0 / .07); }
+.ch .gl { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--sun-a); color: var(--sun); }
+.ch .gl svg { width: 18px; height: 18px; }
+.ch.is-noop .gl { background: var(--glass); color: var(--text-3); }
+.ch .line { margin: 0; font-size: 14.5px; line-height: 1.3; }
+.ch .verb { color: var(--sun); font-weight: 600; margin-right: 5px; }
+.ch.is-noop .verb { color: var(--text-3); }
+.ch .det { margin: 3px 0 0; font-size: 13px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+.ch.is-new { animation: rise .6s var(--ease-out); }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); background: var(--sun-a); } }
+.rev { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; color: var(--text-3); transition: background .2s, color .2s; }
+.rev svg { width: 15px; height: 15px; }
+.rev:hover { background: var(--glass-2); color: var(--text); }
+.seg3 { display: inline-flex; margin: 9px 0 0; padding: 3px; border: 1px solid var(--edge); border-radius: 999px; background: oklch(0% 0 0 / .18); min-width: 0; }
+.seg3 label { position: relative; }
+.seg3 input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.seg3 span { display: block; padding: 4px 11px; border-radius: 999px; font-size: 12.5px; font-weight: 500; color: var(--text-3); transition: background .2s, color .2s; }
+.seg3 label:hover span { color: var(--text); }
+.seg3 input:checked + span { background: var(--sun); color: var(--sun-ink); }
+.seg3 input:focus-visible + span { outline: 2px solid var(--sky); outline-offset: 2px; }
+.c-empty { padding: 8px 24px; color: var(--text-3); font-size: 14px; line-height: 1.55; }
+.c-foot { padding: 14px 18px 18px; display: grid; gap: 12px; border-top: 1px solid var(--edge); background: oklch(0% 0 0 / .1); }
+.ur { display: flex; gap: 8px; }
+.soft { flex: 1; height: 36px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 13.5px; color: var(--text-2); background: var(--glass); border: 1px solid var(--edge); transition: background .2s, color .2s; }
+.soft:hover:not(:disabled) { background: var(--glass-2); color: var(--text); }
+.soft:disabled { opacity: .4; cursor: default; }
+.soft kbd { padding: 2px 5px; font-size: 11px; }
+.calm { margin: 0; color: var(--text-3); font-size: 13px; line-height: 1.45; text-align: center; }
+.write {
+  position: relative; height: 58px; border-radius: 999px; overflow: hidden; display: grid; place-items: center;
+  background: radial-gradient(120% 180% at 50% 0%, oklch(94% 0.07 70), var(--sun) 55%, oklch(80% 0.12 55));
+  color: var(--sun-ink); font: 400 16px/1 var(--display); letter-spacing: -.01em;
+  box-shadow: 0 0 0 1px oklch(94% 0.07 70 / .6) inset, 0 12px 40px -8px var(--sun-glow), 0 0 80px -20px var(--sun-glow);
+  transition: transform .15s var(--ease-out), box-shadow .3s;
+}
+.write small { display: block; font: 500 12px/1 var(--ui); opacity: .75; margin-top: 5px; letter-spacing: 0; }
+.write:hover:not(:disabled) { box-shadow: 0 0 0 1px oklch(94% 0.07 70 / .7) inset, 0 14px 46px -6px var(--sun-glow), 0 0 110px -16px var(--sun-glow); }
+.write:active:not(:disabled) { transform: scale(.98); }
+.write:disabled { background: var(--glass-2); color: var(--text-3); box-shadow: none; cursor: default; }
+.write.is-writing::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, oklch(100% 0 0 / .55), transparent); transform: translateX(-100%); animation: sweep 1.1s var(--ease-out) forwards; }
+@keyframes sweep { to { transform: translateX(100%); } }
+.done { align-self: start; margin: 4px 16px; padding: 22px 20px; border-radius: 22px; background: oklch(88% 0.1 165 / .1); border: 1px solid oklch(88% 0.1 165 / .35); text-align: center; }
+.done .orb { width: 54px; height: 54px; margin: 0 auto 12px; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 35% 30%, oklch(96% 0.05 165), var(--mint)); color: oklch(30% 0.06 165); box-shadow: 0 0 40px -6px oklch(88% 0.1 165 / .6); }
+.done .orb svg { width: 24px; height: 24px; }
+.done h3 { margin: 0 0 6px; font: 300 22px/1.1 var(--display); letter-spacing: -.02em; }
+.done p { margin: 4px 0 0; color: var(--text-2); font-size: 13.5px; }
+.done .soft { margin-top: 16px; width: 100%; }
+
+/* ---------- tether (the light between two suns) ---------- */
+.tether { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 999; opacity: 0; transition: opacity .25s; }
+.tether.on { opacity: 1; }
+.tether path { fill: none; stroke: url(#tg); stroke-width: 2; stroke-linecap: round; }
+.tether .glow { stroke-width: 10; opacity: .35; filter: blur(6px); }
+.ms-ghost.card { box-shadow: 0 30px 50px -20px oklch(8% 0.03 240 / .9), 0 0 50px -8px var(--sun-glow); border-color: oklch(87% 0.105 62 / .8); background: linear-gradient(180deg, oklch(87% 0.105 62 / .28), oklch(30% 0.04 240 / .75)); backdrop-filter: blur(20px); }
+
+/* ---------- palette ---------- */
+.cmdk { position: fixed; inset: 0; z-index: 2000; display: grid; justify-items: center; align-items: start; padding-top: 84px; background: oklch(10% 0.03 240 / .35); backdrop-filter: blur(3px); }
+.cmdk[hidden] { display: none; }
+.cmdk-box { width: min(580px, calc(100vw - 32px)); border-radius: 24px; overflow: hidden; background: oklch(24% 0.035 235 / .82); border: 1px solid var(--edge-2); backdrop-filter: blur(30px) saturate(150%); box-shadow: 0 40px 80px -30px #000; }
+.cmdk.is-open .cmdk-box { animation: materialize .28s var(--ease-out); }
+@keyframes materialize { from { opacity: 0; transform: scale(.97); filter: blur(6px); } }
+.cmdk-field { display: flex; align-items: center; gap: 12px; padding: 0 20px; border-bottom: 1px solid var(--edge); }
+.cmdk-field:focus-within { box-shadow: inset 0 -2px 0 var(--sky); }
+.cmdk-k { font-size: 12px; color: var(--text-3); }
+.cmdk-input { flex: 1; height: 58px; background: none; border: 0; outline: none; color: var(--text); font: 300 18px var(--display); }
+.cmdk-input::placeholder { color: var(--text-3); }
+.cmdk-list { list-style: none; margin: 0; padding: 8px; max-height: 380px; overflow: auto; }
+.cmdk-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 14px; cursor: pointer; font-size: 15px; }
+.cmdk-item.is-sel { background: var(--glass-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--edge); }
+.cmdk-empty { padding: 14px; color: var(--text-3); }
+.cmdk-foot { margin: 0; padding: 11px 20px 13px; border-top: 1px solid var(--edge); color: var(--text-3); font-size: 12.5px; display: flex; gap: 6px; align-items: center; }
+
+.app { opacity: 0; transition: opacity .6s var(--ease-out); }
+.is-ready .app { opacity: 1; }
+
+@media (max-width: 1360px) {
+  .stage { grid-template-columns: minmax(0, 1fr) 312px; gap: 14px; padding: 4px 16px 16px; }
+  .top { padding-right: 16px; }
+  .brand .sub { display: none; }
+  .cat { padding: 0 12px 0 9px; font-size: 13.5px; }
+  .search .long { display: none; }
+  .hero { padding: 22px 24px; }
+  .name { font-size: 40px; }
+  .tiles { gap: 10px; }
+  .tile { height: 132px; }
+  .berths { gap: 11px; }
+}
+@media (max-height: 840px) {
+  .app { grid-template-rows: 58px minmax(0, 1fr); }
+  .hero { padding-top: 20px; padding-bottom: 20px; gap: 16px; }
+  .name { font-size: 38px; margin: 8px 0 6px; }
+  .ring { width: 100px; height: 100px; }
+  .ring .big { font-size: 32px; }
+  .tile { height: 120px; }
+  .orbit { padding: 13px 18px 15px; gap: 10px; }
+  .c-head { padding: 20px 22px 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+  .card.is-arriving { box-shadow: 0 0 0 2px var(--sun); }
+  .ch.is-new { background: var(--sun-a); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass, .cmdk-box { background: oklch(24% 0.035 235); backdrop-filter: none; }
+}
+@media (prefers-contrast: more) { :root { --text-3: oklch(86% 0.02 225); --edge: oklch(100% 0 0 / .35); } }
+</style>
+</head>
+<body>
+<!-- SPRITE:BEGIN --><svg class="sprite" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"><symbol id="g-base" viewBox="-6.0 -129.0 524.0 524.0"><path fill="currentColor" fill-rule="evenodd" d="M494.0 265.1Q494.0 265.1 254.7 265.1Q15.4 265.0 16.7 263.4Q18.0 261.9 20.5 261.0Q23.0 260.1 57.5 255.2Q92.0 250.3 94.7 249.1Q97.5 248.0 98.5 246.5Q99.5 245.0 100.0 242.5Q100.4 240.0 100.3 209.5Q100.3 179.0 99.1 176.3Q98.0 173.5 94.0 171.3Q90.0 169.0 89.2 167.5Q88.4 166.0 88.9 164.5Q89.4 163.0 97.2 152.1Q105.0 141.2 115.4 129.6Q125.7 118.0 135.9 109.7Q146.0 101.4 154.5 95.9Q163.0 90.3 172.5 85.6Q182.0 80.8 189.5 77.9Q197.0 75.0 218.5 69.7Q240.0 64.4 241.5 61.7Q243.1 59.0 242.9 53.5Q242.8 48.0 243.4 46.1Q244.0 44.3 246.5 42.3Q249.0 40.4 253.0 39.1Q257.0 37.8 261.0 39.3Q265.0 40.8 267.1 42.4Q269.3 44.0 269.8 45.5Q270.4 47.0 270.1 52.5Q269.9 58.0 271.7 61.0Q273.5 64.0 275.8 65.0Q278.0 65.9 288.5 67.6Q299.0 69.3 307.5 71.6Q316.0 73.8 323.5 76.6Q331.0 79.4 340.0 83.6Q349.0 87.9 358.0 93.6Q367.0 99.2 375.1 105.6Q383.3 112.0 392.6 121.3Q402.0 130.6 407.1 136.8Q412.1 143.0 419.3 153.0Q426.5 163.0 427.1 164.5Q427.6 166.0 426.3 167.8Q425.0 169.5 420.0 171.1Q415.0 172.6 413.4 175.8Q411.7 179.0 411.7 209.5Q411.6 240.0 412.0 242.5Q412.5 245.0 413.5 246.5Q414.5 248.0 417.3 249.1Q420.0 250.3 453.5 255.1Q487.0 260.0 489.6 261.0Q492.2 262.0 493.1 263.6Q494.0 265.1 494.0 265.1Z"/></symbol><symbol id="g-blueprint" viewBox="-6.0 -8.5 524.0 524.0"><path fill="currentColor" fill-rule="evenodd" d="M281.0 506.0Q281.0 506.0 255.9 506.0Q230.9 506.0 228.1 501.0Q225.4 496.0 221.6 486.5Q217.7 477.0 215.4 474.4Q213.0 471.9 210.0 470.5Q207.0 469.1 204.0 468.9Q201.0 468.7 198.0 469.7Q195.0 470.6 186.0 478.2Q177.0 485.9 172.0 487.9Q167.0 490.0 163.0 489.1Q159.0 488.2 144.5 481.4Q130.0 474.6 128.1 472.3Q126.1 470.0 125.1 467.5Q124.1 465.0 124.2 453.0Q124.4 441.0 123.9 439.0Q123.5 437.0 122.3 435.1Q121.0 433.1 108.0 422.7Q95.0 412.2 92.0 412.0Q89.0 411.8 82.0 414.0Q75.0 416.3 71.2 415.1Q67.3 414.0 62.5 408.5Q57.7 403.0 54.9 398.5Q52.0 394.0 51.6 392.0Q51.2 390.0 51.8 385.5Q52.4 381.0 51.7 379.3Q51.0 377.6 49.0 376.4Q47.0 375.1 40.5 373.6Q34.0 372.0 30.6 369.0Q27.2 366.0 21.1 353.0Q15.0 340.0 13.9 335.5Q12.9 331.0 14.4 327.0Q15.9 323.0 22.6 315.0Q29.3 307.0 30.1 304.5Q31.0 302.0 30.8 299.5Q30.6 297.0 28.3 293.5Q26.0 290.0 13.0 283.6Q0.0 277.1 -0.2 276.1Q-0.3 275.0 -0.2 250.4Q0.0 225.9 12.9 219.4Q25.8 213.0 27.6 211.0Q29.4 209.0 30.2 206.5Q31.1 204.0 31.0 201.5Q30.9 199.0 29.9 196.7Q29.0 194.3 21.8 185.7Q14.6 177.0 14.1 174.5Q13.6 172.0 14.1 169.0Q14.5 166.0 20.2 153.0Q25.9 140.0 28.4 136.5Q31.0 133.0 35.0 131.4Q39.0 129.7 49.0 129.7Q59.0 129.6 61.0 128.7Q63.0 127.8 64.8 125.9Q66.6 124.0 67.2 120.5Q67.9 117.0 65.2 106.0Q62.6 95.0 63.1 92.0Q63.6 89.0 65.3 86.5Q66.9 84.0 76.9 74.3Q87.0 64.7 90.0 63.0Q93.0 61.4 97.0 61.5Q101.0 61.7 111.0 65.2Q121.0 68.8 124.5 67.9Q127.9 67.0 130.0 63.5Q132.1 60.0 132.4 49.5Q132.7 39.0 134.3 35.0Q135.9 31.0 139.4 28.0Q143.0 25.0 156.0 19.3Q169.0 13.6 172.0 13.2Q175.0 12.7 178.0 13.6Q181.0 14.5 192.0 23.7Q203.0 32.9 205.5 33.5Q208.0 34.0 211.0 33.2Q214.0 32.4 216.2 30.2Q218.5 28.0 224.7 14.0Q230.9 0.0 231.9 -0.2Q233.0 -0.3 256.6 -0.2Q280.1 0.0 286.6 14.3Q293.0 28.7 295.0 30.5Q297.0 32.4 299.5 33.2Q302.0 34.0 306.0 33.0Q310.0 32.0 320.0 23.3Q330.0 14.6 333.0 13.7Q336.0 12.8 339.0 13.2Q342.0 13.6 355.2 19.3Q368.3 25.0 371.6 27.5Q374.8 30.0 376.5 34.5Q378.3 39.0 378.7 50.0Q379.1 61.0 380.1 63.0Q381.0 64.9 382.5 66.3Q384.0 67.6 387.5 68.1Q391.0 68.6 402.5 64.7Q414.0 60.8 417.0 61.4Q420.0 62.0 423.0 64.0Q426.1 66.0 435.2 75.0Q444.4 84.0 446.4 87.0Q448.4 90.0 448.7 93.5Q448.9 97.0 446.1 106.5Q443.2 116.0 443.3 118.0Q443.4 120.0 444.4 122.0Q445.4 124.0 448.7 125.6Q452.0 127.3 460.5 127.0Q469.0 126.8 471.5 127.3Q474.0 127.8 477.0 129.4Q480.0 131.0 481.9 133.5Q483.7 136.0 489.9 149.0Q496.1 162.0 496.7 165.5Q497.4 169.0 496.2 172.9Q495.0 176.8 488.5 184.9Q481.9 193.0 481.1 195.5Q480.2 198.0 480.4 200.5Q480.6 203.0 482.9 206.5Q485.3 210.0 498.1 216.4Q511.0 222.9 511.2 223.9Q511.3 225.0 511.2 248.6Q511.0 272.1 499.0 278.7Q487.0 285.2 485.3 287.1Q483.6 289.0 482.8 291.5Q482.0 294.0 483.1 298.0Q484.2 302.0 491.3 310.5Q498.4 319.0 499.1 322.0Q499.9 325.0 499.5 327.5Q499.1 330.0 493.9 342.0Q488.7 354.0 486.4 357.9Q484.0 361.8 480.5 363.8Q477.0 365.8 469.5 367.1Q462.0 368.5 460.0 370.2Q458.0 371.9 457.5 374.5Q457.0 377.0 458.1 385.5Q459.2 394.0 457.1 398.6Q455.0 403.2 450.0 408.3Q445.0 413.4 438.0 418.9Q431.0 424.4 427.0 424.9Q423.0 425.4 413.5 424.1Q404.0 422.8 401.0 423.7Q398.0 424.5 395.5 426.3Q393.0 428.0 391.3 430.5Q389.5 433.0 388.6 436.0Q387.7 439.0 388.1 448.5Q388.5 458.0 388.1 462.0Q387.6 466.0 386.3 468.6Q385.0 471.1 382.1 473.6Q379.2 476.0 366.1 482.0Q353.0 488.0 348.5 488.8Q344.0 489.6 339.5 487.7Q335.0 485.9 325.5 478.1Q316.0 470.2 313.0 469.4Q310.0 468.7 307.0 469.0Q304.0 469.4 301.0 470.8Q298.0 472.3 296.0 474.6Q294.0 476.8 287.5 491.4Q281.0 506.0 281.0 506.0ZM265.4 493.0Q265.4 493.0 267.2 492.3Q269.0 491.6 270.5 489.9Q272.0 488.3 275.3 479.2Q278.6 470.0 280.8 466.4Q283.0 462.8 286.5 459.6Q290.0 456.4 295.5 454.1Q301.0 451.8 305.5 451.3Q310.0 450.9 315.7 452.4Q321.3 454.0 324.7 456.0Q328.0 458.0 334.9 464.5Q341.8 471.0 344.4 472.5Q347.0 474.0 350.0 473.8Q353.0 473.5 360.0 470.3Q367.0 467.1 369.0 465.4Q371.0 463.8 371.9 461.4Q372.9 459.0 371.9 449.0Q370.8 439.0 371.5 434.5Q372.2 430.0 373.6 426.4Q375.0 422.7 377.6 419.4Q380.2 416.0 384.6 412.9Q389.0 409.8 394.5 408.1Q400.0 406.3 404.5 406.5Q409.0 406.7 416.5 408.3Q424.0 410.0 426.0 409.8Q428.0 409.5 430.2 408.3Q432.3 407.0 436.2 403.2Q440.0 399.4 441.6 396.2Q443.3 393.0 441.4 383.5Q439.6 374.0 440.0 371.0Q440.3 368.0 441.7 365.0Q443.1 362.0 445.5 359.2Q448.0 356.4 451.0 354.7Q454.0 353.0 462.5 352.0Q471.0 351.1 473.0 350.3Q475.0 349.4 476.5 347.5Q478.0 345.6 480.6 339.8Q483.2 334.0 483.7 331.5Q484.3 329.0 483.6 327.1Q483.0 325.1 476.3 317.6Q469.6 310.0 467.8 307.0Q466.0 304.0 465.3 301.0Q464.6 298.0 464.8 293.0Q465.0 288.0 466.5 284.2Q468.0 280.4 471.5 276.6Q475.0 272.7 477.5 271.1Q480.0 269.4 486.5 266.8Q493.0 264.3 494.9 262.6Q496.7 261.0 498.0 257.5Q499.3 254.0 499.4 248.0Q499.5 242.0 499.2 239.5Q498.8 237.0 497.7 235.0Q496.5 233.0 485.3 228.0Q474.2 223.0 471.5 220.5Q468.8 218.0 466.9 215.0Q464.9 212.0 463.7 207.0Q462.6 202.0 463.2 196.5Q463.7 191.0 465.8 187.0Q467.8 183.0 474.2 176.0Q480.6 169.0 481.2 167.0Q481.8 165.0 481.6 163.0Q481.3 161.0 478.3 154.5Q475.3 148.0 473.2 146.0Q471.2 144.0 468.6 143.4Q466.0 142.8 458.5 143.5Q451.0 144.3 448.0 143.9Q445.0 143.6 441.0 141.9Q437.0 140.2 433.9 137.1Q430.7 134.0 428.9 130.4Q427.0 126.8 426.3 122.9Q425.7 119.0 429.3 108.0Q432.9 97.0 433.0 95.0Q433.2 93.0 432.2 91.0Q431.2 89.0 427.8 85.5Q424.4 82.0 421.7 80.0Q419.0 77.9 416.5 77.3Q414.0 76.8 403.1 81.4Q392.3 86.0 388.1 86.2Q384.0 86.4 381.1 85.7Q378.2 85.0 373.6 81.7Q369.0 78.4 366.2 74.2Q363.5 70.0 362.5 65.0Q361.6 60.0 362.3 51.0Q363.0 42.0 362.3 40.0Q361.5 38.0 359.7 36.5Q358.0 34.9 351.0 32.0Q344.0 29.1 341.5 28.9Q339.0 28.7 336.9 29.8Q334.7 31.0 325.4 39.7Q316.0 48.4 311.0 50.1Q306.0 51.8 301.5 51.5Q297.0 51.2 292.5 49.3Q288.0 47.4 284.5 44.2Q281.0 41.0 279.0 37.5Q277.0 34.0 274.7 26.5Q272.3 19.0 271.0 17.0Q269.6 15.0 266.8 13.9Q264.0 12.7 257.0 12.6Q250.0 12.5 247.0 13.0Q244.0 13.5 242.3 14.7Q240.6 16.0 236.1 27.5Q231.5 39.0 228.8 42.2Q226.0 45.3 223.0 47.2Q220.0 49.2 214.5 50.5Q209.0 51.8 204.0 50.9Q199.0 50.0 195.0 47.7Q191.0 45.3 183.0 37.7Q175.0 30.0 173.0 29.3Q171.0 28.5 169.0 28.8Q167.0 29.0 160.0 32.1Q153.0 35.1 151.0 37.0Q148.9 39.0 148.4 41.5Q147.8 44.0 148.6 51.0Q149.4 58.0 149.2 62.0Q148.9 66.0 147.2 70.5Q145.4 75.0 142.2 78.4Q139.0 81.7 135.0 83.7Q131.0 85.7 126.0 86.0Q121.0 86.4 118.0 85.7Q115.0 85.0 107.5 81.5Q100.0 78.0 97.5 77.7Q95.0 77.4 92.5 78.6Q90.0 79.7 85.1 84.4Q80.2 89.0 79.2 90.5Q78.2 92.0 78.0 94.0Q77.8 96.0 81.0 104.5Q84.1 113.0 84.8 116.5Q85.4 120.0 84.8 124.0Q84.3 128.0 82.6 131.5Q80.9 135.0 77.4 138.4Q74.0 141.9 70.5 143.5Q67.0 145.2 63.0 145.8Q59.0 146.4 52.0 145.7Q45.0 145.1 42.5 145.5Q40.0 145.9 38.0 147.7Q36.0 149.6 33.6 154.8Q31.1 160.0 30.2 163.0Q29.3 166.0 29.6 168.0Q29.9 170.0 37.8 179.5Q45.7 189.0 47.2 193.5Q48.8 198.0 48.9 202.0Q49.0 206.0 47.1 211.5Q45.1 217.0 42.3 220.5Q39.4 224.0 36.7 226.0Q33.9 228.0 26.5 231.0Q19.0 234.1 17.0 235.6Q15.0 237.2 13.9 240.1Q12.7 243.0 12.6 250.0Q12.5 257.0 12.8 259.5Q13.1 262.0 14.2 264.0Q15.2 266.0 26.2 271.5Q37.2 277.0 40.6 280.6Q44.0 284.2 45.9 288.6Q47.8 293.0 48.0 298.5Q48.3 304.0 46.9 308.5Q45.6 313.0 43.9 315.5Q42.3 318.0 36.5 324.0Q30.8 330.0 29.7 332.0Q28.7 334.0 29.1 337.0Q29.4 340.0 32.7 347.2Q36.0 354.4 38.0 356.2Q40.0 358.0 48.0 359.0Q56.0 360.0 60.5 362.5Q65.1 365.0 67.6 369.5Q70.0 374.0 69.5 382.0Q69.0 390.0 69.7 392.0Q70.4 394.0 71.7 395.4Q73.0 396.9 75.5 397.5Q78.0 398.2 85.0 396.4Q92.0 394.6 95.5 395.3Q99.0 396.0 116.6 410.0Q134.2 424.0 136.1 426.8Q138.0 429.7 139.1 432.8Q140.1 436.0 139.4 447.0Q138.8 458.0 140.1 461.5Q141.4 465.0 149.7 469.1Q158.0 473.1 161.0 473.7Q164.0 474.2 167.0 472.7Q170.0 471.2 176.5 464.9Q183.0 458.7 186.5 456.5Q190.0 454.3 195.5 452.7Q201.0 451.2 206.0 451.6Q211.0 452.0 216.0 454.0Q220.9 456.0 224.9 459.5Q228.8 463.0 231.1 467.0Q233.5 471.0 236.2 479.4Q239.0 487.7 240.5 489.6Q242.0 491.5 245.5 492.4Q249.0 493.4 257.2 493.2Q265.4 493.0 265.4 493.0ZM268.0 426.1Q268.0 426.1 257.5 426.3Q247.0 426.5 240.5 425.8Q234.0 425.2 225.0 423.6Q216.0 422.1 209.0 420.1Q202.0 418.2 193.5 414.9Q185.0 411.6 177.3 407.8Q169.7 404.0 156.3 394.6Q143.0 385.2 136.5 379.4Q130.0 373.5 125.4 368.2Q120.7 363.0 115.5 356.0Q110.2 349.0 106.1 342.2Q102.0 335.5 98.2 327.7Q94.4 320.0 91.3 311.5Q88.2 303.0 86.2 294.5Q84.1 286.0 82.9 276.5Q81.6 267.0 81.6 256.0Q81.6 245.0 82.2 239.5Q82.8 234.0 86.2 219.0Q89.6 204.0 92.8 195.5Q95.9 187.0 99.4 180.0Q102.9 173.0 107.9 165.0Q112.9 157.0 119.5 148.9Q126.0 140.7 138.0 129.7Q150.0 118.6 156.5 114.1Q163.0 109.6 171.0 105.2Q179.0 100.8 195.0 94.8Q211.0 88.9 226.5 86.3Q242.0 83.6 254.5 83.6Q267.0 83.5 272.5 84.1Q278.0 84.7 287.5 86.4Q297.0 88.2 304.5 90.3Q312.0 92.5 326.5 99.0Q341.0 105.5 347.0 109.3Q353.1 113.0 362.5 120.4Q372.0 127.8 382.5 139.0Q393.0 150.2 397.2 156.1Q401.4 162.0 406.3 170.5Q411.2 179.0 414.3 185.5Q417.3 192.0 420.2 200.5Q423.1 209.0 426.2 225.5Q429.4 242.0 429.4 254.0Q429.5 266.0 428.8 272.5Q428.2 279.0 426.6 287.0Q425.0 295.0 422.6 303.0Q420.2 311.0 413.1 326.0Q406.0 341.0 402.1 347.0Q398.2 353.0 392.1 360.6Q386.0 368.3 380.1 374.1Q374.3 380.0 364.9 387.5Q355.5 395.0 342.2 402.6Q329.0 410.2 315.5 415.2Q302.0 420.1 295.0 421.8Q288.0 423.4 278.0 424.7Q268.0 426.1 268.0 426.1ZM262.5 412.0Q262.5 412.0 271.2 411.1Q280.0 410.2 287.5 408.7Q295.0 407.1 309.5 401.9Q324.0 396.7 331.5 392.7Q339.0 388.7 346.0 383.9Q353.0 379.0 364.0 368.7Q375.0 358.4 380.3 351.7Q385.6 345.0 389.0 339.5Q392.5 334.0 398.8 320.5Q405.2 307.0 408.7 292.5Q412.2 278.0 412.8 262.5Q413.4 247.0 411.4 234.0Q409.3 221.0 403.9 206.0Q398.5 191.0 389.8 177.0Q381.0 163.0 370.7 152.0Q360.3 141.0 348.1 132.2Q336.0 123.4 331.0 120.6Q326.0 117.8 316.0 113.7Q306.0 109.6 291.0 106.3Q276.0 102.9 262.0 102.3Q248.0 101.6 239.0 102.7Q230.0 103.7 221.5 105.6Q213.0 107.4 199.0 112.7Q185.0 118.0 171.5 126.5Q158.0 135.0 147.3 145.0Q136.6 155.0 128.8 165.5Q120.9 176.0 116.9 183.5Q112.8 191.0 109.8 198.0Q106.8 205.0 102.8 220.5Q98.8 236.0 98.2 241.0Q97.6 246.0 97.6 257.0Q97.6 268.0 100.0 282.0Q102.5 296.0 104.5 302.5Q106.6 309.0 109.7 316.0Q112.8 323.0 117.4 331.2Q122.0 339.4 126.5 345.7Q131.0 352.0 139.8 361.5Q148.7 371.0 160.9 380.0Q173.0 389.1 186.0 395.4Q199.0 401.8 215.0 406.0Q231.0 410.2 241.5 411.3Q252.0 412.4 257.2 412.2Q262.5 412.0 262.5 412.0ZM257.0 354.0Q257.0 354.0 248.0 353.3Q239.0 352.6 231.0 350.5Q223.0 348.4 214.5 344.2Q206.0 340.0 199.5 335.2Q193.0 330.4 185.5 322.2Q178.0 314.0 173.9 307.0Q169.8 300.0 166.4 290.5Q163.0 281.0 161.8 272.5Q160.5 264.0 161.1 254.0Q161.6 244.0 163.9 235.5Q166.1 227.0 169.9 219.0Q173.7 211.0 179.4 203.3Q185.0 195.6 193.5 188.3Q202.0 180.9 209.5 176.9Q217.0 172.8 225.5 170.0Q234.0 167.2 243.5 165.8Q253.0 164.5 262.0 165.2Q271.0 166.0 279.0 168.0Q287.0 169.9 296.0 174.2Q305.0 178.4 312.0 183.5Q319.0 188.6 324.4 194.3Q329.8 200.0 335.0 208.0Q340.2 216.0 343.8 225.0Q347.4 234.0 349.0 242.5Q350.5 251.0 350.3 261.0Q350.2 271.0 348.1 280.0Q346.0 289.0 341.5 298.5Q337.0 308.0 331.1 316.0Q325.1 324.0 316.6 331.2Q308.0 338.3 299.5 342.7Q291.0 347.1 283.0 349.6Q275.0 352.0 266.0 353.0Q257.0 354.0 257.0 354.0ZM264.4 339.0Q264.4 339.0 272.2 337.2Q280.0 335.5 286.5 332.8Q293.0 330.2 299.0 326.3Q305.0 322.5 311.0 316.8Q317.0 311.1 321.8 304.0Q326.6 297.0 329.7 290.0Q332.7 283.0 334.5 274.5Q336.2 266.0 336.2 259.0Q336.2 252.0 334.7 244.5Q333.1 237.0 330.0 229.5Q326.9 222.0 322.5 215.5Q318.2 209.0 312.6 203.5Q307.0 197.9 300.0 193.2Q293.0 188.4 285.0 185.3Q277.0 182.2 270.0 180.9Q263.0 179.6 254.5 179.7Q246.0 179.8 238.0 181.7Q230.0 183.6 222.5 186.9Q215.0 190.3 209.0 194.5Q203.0 198.8 198.0 203.9Q193.0 209.0 188.5 215.8Q184.0 222.5 181.0 230.3Q177.9 238.0 176.8 244.0Q175.6 250.0 175.7 259.5Q175.7 269.0 177.6 277.0Q179.5 285.0 182.4 291.5Q185.4 298.0 189.2 303.6Q193.0 309.3 199.5 315.7Q206.0 322.1 212.5 326.2Q219.0 330.4 226.0 333.2Q233.0 336.1 241.0 337.7Q249.0 339.3 256.7 339.2Q264.4 339.0 264.4 339.0Z"/></symbol><symbol id="g-companion" viewBox="-6.0 -89.0 524.0 524.0"><path fill="currentColor" fill-rule="evenodd" d="M300.0 336.5Q300.0 336.5 298.5 336.4Q297.0 336.4 292.0 334.2Q287.0 332.0 285.7 330.0Q284.4 328.0 284.8 325.5Q285.1 323.0 287.5 317.0Q289.9 311.0 290.2 307.5Q290.5 304.0 289.9 281.5Q289.4 259.0 287.5 245.0Q285.7 231.0 285.9 223.5Q286.1 216.0 285.5 213.9Q285.0 211.8 282.0 209.4Q279.0 207.0 270.0 204.3Q261.0 201.6 258.5 201.4Q256.0 201.3 253.0 202.9Q250.0 204.6 242.9 212.3Q235.8 220.0 234.3 222.5Q232.8 225.0 232.5 227.0Q232.3 229.0 234.5 236.5Q236.7 244.0 238.8 245.8Q241.0 247.5 247.0 249.1Q253.0 250.7 254.8 253.4Q256.6 256.0 256.2 258.0Q255.8 260.0 254.4 261.6Q253.0 263.2 249.5 264.6Q246.0 266.1 243.5 265.8Q241.0 265.6 237.0 262.0Q233.0 258.5 230.5 255.2Q228.0 252.0 225.8 247.5Q223.6 243.0 221.7 237.0Q219.8 231.0 220.2 226.5Q220.6 222.0 225.3 208.0Q230.0 194.0 229.9 191.0Q229.9 188.0 228.2 186.0Q226.6 184.0 217.3 177.4Q208.0 170.8 205.0 170.2Q202.0 169.7 198.4 171.8Q194.7 174.0 182.0 188.5Q169.3 203.0 160.1 210.3Q151.0 217.6 146.3 222.8Q141.6 228.0 136.1 237.5Q130.6 247.0 128.7 253.0Q126.7 259.0 127.9 262.8Q129.0 266.6 134.1 269.8Q139.3 273.0 140.1 275.0Q141.0 277.0 140.1 278.5Q139.3 280.0 134.1 284.1Q129.0 288.2 123.5 288.6Q118.0 288.9 116.1 287.4Q114.2 286.0 112.9 281.0Q111.6 276.0 111.9 269.0Q112.1 262.0 113.9 256.0Q115.6 250.0 120.5 239.0Q125.5 228.0 129.2 218.0Q132.8 208.0 138.2 200.0Q143.6 192.0 148.1 183.0Q152.6 174.0 153.0 171.5Q153.4 169.0 152.4 167.0Q151.3 165.0 149.6 164.4Q148.0 163.8 146.0 164.3Q144.0 164.7 123.7 176.4Q103.5 188.0 86.7 195.6Q70.0 203.2 60.0 206.2Q50.0 209.3 44.5 210.4Q39.0 211.4 36.0 211.0Q33.0 210.6 32.4 209.8Q31.7 209.0 31.9 207.6Q32.0 206.2 33.5 205.0Q35.0 203.7 42.0 201.2Q49.0 198.6 56.0 195.2Q63.0 191.7 72.0 186.1Q81.0 180.5 112.1 156.7Q143.2 133.0 162.1 119.5Q181.0 106.0 195.5 92.8Q210.0 79.6 216.5 75.5Q223.0 71.3 233.0 66.8Q243.0 62.3 252.0 60.2Q261.0 58.1 268.0 57.4Q275.0 56.6 286.5 57.8Q298.0 59.0 304.0 60.5Q310.0 62.0 317.0 64.9Q324.0 67.8 339.5 77.4Q355.0 87.0 359.0 88.9Q363.0 90.7 368.5 92.0Q374.0 93.4 379.5 92.7Q385.0 92.0 386.4 90.5Q387.8 89.0 387.8 87.0Q387.9 85.0 383.0 76.0Q378.1 67.0 375.9 58.0Q373.7 49.0 374.0 41.5Q374.3 34.0 376.7 28.4Q379.0 22.8 383.5 18.7Q388.0 14.5 396.5 9.6Q405.0 4.6 406.4 2.3Q407.8 0.0 434.5 0.0Q461.2 0.0 462.6 2.2Q464.0 4.5 471.0 8.6Q478.0 12.7 483.6 17.3Q489.3 22.0 493.2 27.0Q497.1 32.0 501.8 40.0Q506.5 48.0 508.8 49.4Q511.0 50.8 511.0 72.5Q511.0 94.1 502.5 100.4Q494.0 106.6 486.5 109.6Q479.0 112.6 467.0 114.4Q455.0 116.3 447.0 115.7Q439.0 115.1 436.5 115.5Q434.0 115.9 431.9 117.4Q429.7 119.0 427.9 121.6Q426.0 124.2 424.2 127.6Q422.5 131.0 422.1 133.5Q421.8 136.0 429.0 149.0Q436.2 162.0 442.8 177.5Q449.3 193.0 456.0 202.0Q462.6 211.0 478.3 240.0Q494.0 269.0 500.0 275.5Q506.0 282.0 508.5 283.5Q511.0 284.9 511.0 290.0Q511.0 295.1 507.5 294.9Q504.0 294.7 501.0 296.4Q498.0 298.2 496.5 298.3Q495.0 298.4 490.0 292.5Q485.0 286.5 483.0 286.0Q481.0 285.6 477.5 286.6Q474.0 287.7 472.5 287.1Q471.0 286.6 470.5 284.8Q470.1 283.0 472.5 278.5Q474.9 274.0 475.6 271.0Q476.2 268.0 475.3 264.0Q474.4 260.0 472.2 255.8Q470.0 251.5 463.2 241.3Q456.4 231.0 444.9 220.5Q433.4 210.0 421.7 193.5Q409.9 177.0 407.9 175.3Q406.0 173.6 404.0 173.2Q402.0 172.9 400.0 173.8Q398.0 174.8 391.0 180.9Q384.0 187.1 376.0 192.2Q368.0 197.2 358.0 201.3Q348.0 205.3 335.0 207.9Q322.0 210.5 320.1 211.7Q318.2 213.0 316.6 215.2Q315.0 217.3 313.5 220.7Q312.1 224.0 308.8 240.0Q305.5 256.0 304.6 265.0Q303.7 274.0 304.3 282.0Q305.0 290.0 306.5 295.5Q308.0 301.0 310.0 304.2Q312.0 307.3 316.4 311.2Q320.7 315.0 321.3 317.0Q321.9 319.0 320.5 320.4Q319.0 321.8 315.5 321.6Q312.0 321.3 310.0 322.0Q308.0 322.6 306.7 324.3Q305.4 326.0 304.0 330.0Q302.7 334.0 301.3 335.2Q300.0 336.5 300.0 336.5ZM460.6 86.0Q460.6 86.0 462.8 85.2Q465.0 84.3 466.5 82.7Q468.0 81.1 468.6 79.1Q469.2 77.0 469.0 74.5Q468.8 72.0 466.1 65.5Q463.4 59.0 458.2 53.6Q453.0 48.3 447.5 45.6Q442.0 43.0 436.0 42.3Q430.0 41.6 423.0 43.3Q416.0 45.0 412.5 47.5Q409.1 50.0 408.3 52.5Q407.5 55.0 408.8 58.7Q410.0 62.3 412.8 66.2Q415.6 70.0 419.8 73.5Q424.0 77.1 428.0 79.3Q432.0 81.6 438.0 83.6Q444.0 85.6 452.3 85.8Q460.6 86.0 460.6 86.0Z"/></symbol><symbol id="g-currency" viewBox="-6.0 -6.0 524.0 524.0"><path fill="currentColor" fill-rule="evenodd" d="M305.0 511.0Q305.0 511.0 255.0 511.0Q205.0 511.0 204.0 509.3Q203.0 507.5 201.5 506.5Q200.0 505.4 186.0 501.3Q172.0 497.2 162.0 493.1Q152.0 489.1 142.5 484.4Q133.0 479.6 124.5 474.4Q116.0 469.2 109.0 464.2Q102.0 459.3 92.3 451.1Q82.5 443.0 74.3 434.6Q66.0 426.3 56.5 414.5Q47.0 402.7 36.4 384.8Q25.8 367.0 20.7 355.0Q15.6 343.0 10.6 327.0Q5.6 311.0 4.5 309.5Q3.5 308.0 1.7 307.0Q-0.0 306.0 -0.0 255.5Q-0.0 205.0 1.7 204.0Q3.5 203.0 4.5 201.5Q5.6 200.0 9.6 186.5Q13.6 173.0 19.2 159.5Q24.8 146.0 28.8 138.0Q32.9 130.0 39.9 119.0Q46.8 108.0 56.8 95.5Q66.8 83.0 73.4 76.3Q80.0 69.5 95.5 57.0Q111.0 44.5 127.5 35.0Q144.0 25.4 158.0 19.6Q172.0 13.8 186.5 9.7Q201.0 5.5 202.5 4.5Q204.0 3.5 205.0 1.7Q206.0 -0.0 256.0 -0.0Q306.0 -0.0 307.0 1.7Q308.0 3.5 309.5 4.5Q311.0 5.6 325.5 9.8Q340.0 14.0 352.2 19.0Q364.4 24.0 381.0 33.5Q397.6 43.0 406.3 49.4Q415.0 55.8 424.0 63.6Q433.0 71.5 441.6 80.8Q450.2 90.0 457.7 99.5Q465.1 109.0 472.1 120.0Q479.1 131.0 484.2 141.0Q489.2 151.0 493.7 162.0Q498.2 173.0 501.8 185.5Q505.5 198.0 506.5 199.5Q507.5 201.0 509.3 202.0Q511.0 203.0 511.0 255.5Q511.0 308.0 509.3 309.0Q507.5 310.0 506.5 311.5Q505.4 313.0 501.6 325.5Q497.8 338.0 493.5 348.5Q489.2 359.0 483.6 370.0Q478.1 381.0 472.3 390.0Q466.5 399.0 459.8 408.0Q453.1 417.0 446.8 424.0Q440.5 431.0 429.2 441.6Q418.0 452.2 408.3 459.6Q398.7 467.0 388.3 473.5Q378.0 480.0 368.7 484.5Q359.4 489.0 347.7 493.6Q336.0 498.1 323.0 501.8Q310.0 505.4 308.5 506.5Q307.0 507.5 306.0 509.3Q305.0 511.0 305.0 511.0ZM126.6 293.0Q126.6 293.0 138.3 290.3Q150.0 287.7 152.8 285.8Q155.7 284.0 166.7 259.5Q177.8 235.0 189.2 214.5Q200.6 194.0 211.4 178.0Q222.1 162.0 240.6 139.8Q259.0 117.6 267.0 109.6Q275.0 101.6 280.7 96.8Q286.4 92.0 288.7 91.3Q291.0 90.7 301.5 90.0Q312.0 89.4 314.4 87.7Q316.7 86.0 316.9 84.4Q317.0 82.7 316.0 80.9Q315.0 79.0 291.2 54.0Q267.5 29.0 263.7 25.8Q260.0 22.5 257.5 22.2Q255.0 22.0 252.4 23.5Q249.7 25.0 224.1 52.5Q198.5 80.0 198.3 82.1Q198.0 84.2 199.5 86.1Q200.9 88.0 211.0 89.7Q221.0 91.5 222.2 92.7Q223.5 94.0 223.4 95.5Q223.4 97.0 210.7 112.4Q198.0 127.9 189.9 138.9Q181.8 150.0 171.9 165.5Q161.9 181.0 152.3 199.0Q142.8 217.0 135.2 234.0Q127.7 251.0 121.7 267.5Q115.6 284.0 115.6 286.5Q115.6 289.0 116.6 290.5Q117.6 292.0 119.3 292.7Q121.0 293.5 123.8 293.2Q126.6 293.0 126.6 293.0ZM98.2 163.0Q98.2 163.0 99.8 162.0Q101.4 161.0 102.3 159.0Q103.3 157.0 106.5 140.5Q109.7 124.0 111.0 121.5Q112.3 119.0 115.1 117.5Q118.0 116.0 147.0 107.3Q176.0 98.6 178.0 96.3Q180.0 94.0 179.2 91.5Q178.4 89.0 175.2 87.8Q172.0 86.6 147.0 85.1Q122.0 83.5 111.5 83.4Q101.0 83.3 97.8 85.2Q94.6 87.0 91.5 90.5Q88.4 94.0 87.8 97.0Q87.2 100.0 89.1 128.5Q90.9 157.0 92.3 159.5Q93.7 162.0 95.9 162.5Q98.2 163.0 98.2 163.0ZM417.2 159.0Q417.2 159.0 419.1 157.5Q421.0 156.1 421.7 153.5Q422.5 151.0 424.1 125.5Q425.8 100.0 424.9 97.0Q424.0 94.0 420.2 90.0Q416.3 86.0 413.2 84.6Q410.0 83.2 401.5 83.4Q393.0 83.6 368.0 85.1Q343.0 86.6 341.0 87.1Q339.0 87.5 337.5 88.6Q336.0 89.7 335.6 92.3Q335.2 95.0 337.1 96.8Q339.0 98.6 370.0 108.5Q401.0 118.4 402.7 121.2Q404.4 124.0 407.4 139.5Q410.5 155.0 411.7 156.6Q413.0 158.2 415.1 158.6Q417.2 159.0 417.2 159.0ZM260.2 488.0Q260.2 488.0 263.3 485.5Q266.5 483.0 293.2 455.0Q319.9 427.0 321.9 425.7Q324.0 424.3 328.0 423.9Q332.0 423.6 370.0 425.6Q408.0 427.6 410.5 427.2Q413.0 426.8 415.5 425.0Q418.0 423.3 421.5 419.2Q425.0 415.0 425.8 412.5Q426.6 410.0 424.6 376.5Q422.6 343.0 422.5 333.0Q422.4 323.0 423.7 321.1Q425.0 319.3 454.5 290.4Q484.0 261.5 486.0 258.7Q488.0 256.0 488.0 253.5Q488.0 251.0 486.2 248.5Q484.5 246.0 461.2 223.3Q438.0 200.6 433.0 196.5Q428.0 192.5 425.5 192.4Q423.0 192.3 421.6 193.6Q420.2 195.0 418.6 208.5Q416.9 222.0 415.8 223.5Q414.7 225.0 412.9 224.9Q411.0 224.8 409.8 222.4Q408.6 220.0 404.9 198.5Q401.2 177.0 397.3 172.0Q393.5 167.0 386.0 159.5Q378.4 152.0 376.2 150.6Q374.0 149.1 371.5 149.4Q369.0 149.6 367.4 151.3Q365.9 153.0 357.1 179.0Q348.4 205.0 342.0 220.5Q335.6 236.0 326.9 254.0Q318.2 272.0 305.9 293.0Q293.6 314.0 277.5 336.5Q261.3 359.0 251.7 370.6Q242.0 382.3 230.9 394.1Q219.8 406.0 218.8 408.0Q217.8 410.0 217.4 414.5Q217.0 419.0 215.0 420.1Q213.0 421.2 207.0 421.5Q201.0 421.8 199.1 423.4Q197.3 425.0 197.2 427.0Q197.1 429.0 198.4 431.0Q199.6 433.0 223.3 457.7Q247.0 482.5 250.5 485.3Q254.0 488.1 257.1 488.0Q260.2 488.0 260.2 488.0ZM91.2 317.0Q91.2 317.0 92.6 316.2Q94.0 315.3 94.7 313.7Q95.5 312.0 95.1 307.0Q94.8 302.0 97.5 277.0Q100.1 252.0 97.6 227.5Q95.0 203.0 95.1 199.0Q95.3 195.0 94.3 193.0Q93.2 191.0 91.6 190.4Q90.0 189.8 88.0 190.4Q86.0 191.1 82.4 194.0Q78.7 197.0 62.4 212.8Q46.0 228.5 36.5 238.1Q27.0 247.7 25.8 250.9Q24.6 254.0 26.6 257.5Q28.5 261.0 53.3 285.2Q78.0 309.4 82.0 312.7Q86.0 316.0 88.6 316.5Q91.2 317.0 91.2 317.0ZM120.5 427.0Q120.5 427.0 148.2 425.5Q176.0 424.1 178.7 422.5Q181.3 421.0 181.8 418.5Q182.2 416.0 181.4 414.5Q180.5 413.0 178.2 411.7Q176.0 410.3 144.4 398.7Q112.7 387.0 111.0 384.0Q109.4 381.0 105.9 363.5Q102.5 346.0 101.3 344.4Q100.0 342.8 97.9 342.4Q95.8 342.0 94.2 343.0Q92.7 344.0 91.7 346.5Q90.7 349.0 89.2 381.5Q87.6 414.0 89.6 417.0Q91.5 420.0 95.8 423.5Q100.0 427.0 110.2 427.0Q120.5 427.0 120.5 427.0Z"/></symbol><symbol id="g-exocraft" viewBox="-6.0 -155.5 524.0 524.0"><path fill="currentColor" fill-rule="evenodd" d="M204.0 5.1Q204.0 5.1 199.7 5.0Q195.4 5.0 194.3 4.0Q193.2 3.0 192.8 1.5Q192.4 0.0 204.0 0.0Q215.6 0.0 213.8 1.8Q212.0 3.6 208.0 4.3Q204.0 5.1 204.0 5.1ZM331.0 5.4Q331.0 5.4 322.6 4.7Q314.2 4.0 311.8 2.0Q309.4 0.0 322.0 0.0Q334.6 0.0 334.2 1.5Q333.8 3.0 332.4 4.2Q331.0 5.4 331.0 5.4ZM511.0 212.5Q511.0 212.5 255.5 212.5Q0.0 212.5 0.0 209.0Q0.0 205.5 8.0 204.5Q16.0 203.5 17.5 202.5Q19.0 201.4 19.7 199.7Q20.4 198.0 20.0 196.0Q19.6 194.0 16.1 188.5Q12.5 183.0 10.8 179.0Q9.0 175.0 5.9 163.0Q2.8 151.0 4.3 147.0Q5.8 143.0 7.4 135.5Q9.0 128.0 13.8 119.0Q18.7 110.0 21.4 107.0Q24.1 104.0 27.0 102.0Q30.0 99.9 33.5 98.0Q37.0 96.2 43.5 94.4Q50.0 92.6 51.9 90.8Q53.8 89.0 53.3 86.0Q52.9 83.0 47.9 79.0Q43.0 75.0 42.7 73.5Q42.4 72.0 43.2 70.4Q44.0 68.7 46.5 67.7Q49.0 66.7 61.0 66.4Q73.0 66.1 82.0 62.1Q91.0 58.1 99.0 56.6Q107.0 55.0 108.6 53.5Q110.1 52.0 114.4 43.5Q118.6 35.0 121.3 32.3Q124.0 29.6 126.0 29.8Q128.0 29.9 130.5 32.1Q133.0 34.4 135.0 34.9Q137.0 35.5 167.5 36.0Q198.0 36.5 202.5 36.0Q207.0 35.6 213.5 31.9Q220.0 28.2 221.5 28.6Q223.1 29.0 226.0 32.0Q229.0 35.1 232.0 35.7Q235.0 36.4 260.0 34.9Q285.0 33.5 318.5 33.5Q352.0 33.5 370.0 34.8Q388.0 36.1 390.0 35.6Q392.0 35.1 395.0 32.5Q398.0 29.9 399.5 29.5Q401.0 29.2 402.5 29.8Q404.0 30.4 405.7 32.2Q407.4 34.0 412.0 43.5Q416.6 53.0 418.3 54.8Q420.0 56.6 427.5 58.0Q435.0 59.5 442.0 62.8Q449.0 66.0 453.5 67.2Q458.0 68.4 459.4 69.7Q460.9 71.0 460.9 73.0Q460.9 75.0 458.9 76.5Q457.0 77.9 448.0 78.3Q439.0 78.7 435.5 80.0Q432.0 81.2 429.6 84.1Q427.1 87.0 427.0 88.5Q426.9 90.0 427.8 91.5Q428.7 93.0 430.8 93.8Q433.0 94.6 446.5 94.1Q460.0 93.6 465.5 94.7Q471.0 95.7 477.5 99.4Q484.0 103.1 488.2 107.5Q492.5 112.0 497.0 121.5Q501.4 131.0 502.7 138.0Q503.9 145.0 503.8 149.5Q503.8 154.0 502.2 163.5Q500.7 173.0 498.6 178.0Q496.5 183.0 492.9 188.5Q489.4 194.0 489.1 196.5Q488.8 199.0 489.7 200.5Q490.6 202.0 492.3 202.9Q494.0 203.8 502.5 205.0Q511.0 206.1 511.0 209.3Q511.0 212.5 511.0 212.5ZM398.7 130.0Q398.7 130.0 400.7 128.0Q402.7 126.0 405.4 119.5Q408.1 113.0 407.5 109.5Q407.0 106.0 405.0 104.5Q403.0 102.9 400.5 103.2Q398.0 103.5 392.5 105.8Q387.0 108.1 385.5 109.3Q384.0 110.4 383.2 112.2Q382.4 114.0 382.9 116.5Q383.4 119.0 386.5 123.0Q389.6 127.0 391.8 128.5Q394.0 130.0 396.4 130.0Q398.7 130.0 398.7 130.0ZM43.3 183.0Q43.3 183.0 47.4 180.5Q51.4 178.0 54.7 173.3Q58.0 168.7 59.6 163.3Q61.2 158.0 61.2 151.0Q61.3 144.0 59.9 139.0Q58.6 134.0 55.8 129.4Q53.0 124.9 49.5 122.3Q46.0 119.8 41.5 118.8Q37.0 117.8 32.5 119.6Q28.0 121.5 24.7 125.2Q21.4 129.0 19.2 134.5Q17.0 140.0 16.4 147.0Q15.7 154.0 17.3 161.0Q19.0 168.0 22.0 172.7Q25.0 177.4 29.5 180.2Q34.0 183.1 36.5 183.5Q39.0 183.9 41.1 183.4Q43.3 183.0 43.3 183.0ZM267.5 184.0Q267.5 184.0 271.7 182.1Q276.0 180.1 280.1 175.6Q284.1 171.0 286.1 165.5Q288.0 160.0 288.2 153.0Q288.4 146.0 287.2 140.5Q286.0 135.0 283.2 130.5Q280.4 126.0 276.7 122.9Q273.0 119.8 268.5 118.8Q264.0 117.8 259.0 119.6Q254.0 121.3 250.4 125.2Q246.9 129.0 244.5 134.5Q242.0 140.0 241.3 147.0Q240.6 154.0 242.1 160.5Q243.6 167.0 246.8 172.1Q250.0 177.2 254.5 180.1Q259.0 183.0 263.2 183.5Q267.5 184.0 267.5 184.0ZM471.6 184.0Q471.6 184.0 475.8 182.4Q480.0 180.9 483.7 176.9Q487.4 173.0 489.4 168.5Q491.3 164.0 492.3 157.0Q493.4 150.0 492.4 144.0Q491.4 138.0 489.1 133.0Q486.7 128.0 482.9 124.2Q479.0 120.5 474.5 119.1Q470.0 117.8 465.5 119.2Q461.0 120.6 457.5 124.4Q454.0 128.1 451.5 133.6Q449.0 139.1 448.3 146.0Q447.5 153.0 448.7 159.0Q449.9 165.0 452.4 170.0Q455.0 175.0 458.5 178.2Q462.0 181.4 466.8 182.7Q471.6 184.0 471.6 184.0ZM406.4 202.0Q406.4 202.0 408.8 200.5Q411.2 199.0 411.6 196.5Q411.9 194.0 407.6 185.5Q403.3 177.0 400.9 167.5Q398.4 158.0 396.7 156.4Q395.0 154.9 392.5 154.3Q390.0 153.6 382.5 153.9Q375.0 154.1 369.0 157.6Q363.0 161.2 359.5 162.1Q356.0 163.0 351.5 162.0Q347.0 160.9 341.0 157.0Q335.0 153.1 329.0 152.8Q323.0 152.5 320.0 153.0Q317.0 153.5 314.7 155.7Q312.4 158.0 309.8 167.0Q307.2 176.0 302.5 185.0Q297.8 194.0 298.7 196.5Q299.6 199.0 302.8 200.2Q306.0 201.4 356.2 201.7Q406.4 202.0 406.4 202.0ZM155.5 202.0Q155.5 202.0 175.7 201.7Q196.0 201.4 198.0 200.9Q200.0 200.5 201.5 199.4Q203.0 198.3 203.6 196.7Q204.2 195.0 203.9 193.5Q203.7 192.0 199.5 184.0Q195.3 176.0 192.7 166.3Q190.0 156.5 188.0 155.4Q186.0 154.2 183.5 154.3Q181.0 154.4 176.0 156.9Q171.0 159.3 166.0 163.1Q161.0 166.9 156.5 167.7Q152.0 168.4 147.0 167.0Q142.0 165.5 137.5 160.9Q133.0 156.2 131.0 155.2Q129.0 154.1 123.5 153.9Q118.0 153.7 115.3 154.9Q112.5 156.0 111.4 158.0Q110.2 160.0 108.2 168.5Q106.2 177.0 101.6 185.5Q97.1 194.0 97.0 195.5Q96.9 197.0 97.8 198.5Q98.6 200.0 100.3 200.9Q102.0 201.8 104.5 202.2Q107.0 202.5 131.2 202.2Q155.5 202.0 155.5 202.0Z"/></symbol><symbol id="g-freighter" viewBox="-6.0 -154.0 524.0 524.0"><path fill="currentColor" fill-rule="evenodd" d="M66.0 215.0Q66.0 215.0 59.2 215.0Q52.4 215.0 51.6 209.0Q50.8 203.0 49.4 200.8Q48.0 198.6 41.0 196.8Q34.0 194.9 28.5 191.2Q23.0 187.4 14.5 186.5Q6.0 185.5 4.8 184.3Q3.6 183.0 3.7 181.5Q3.8 180.0 9.6 174.5Q15.5 169.0 17.8 162.4Q20.0 155.9 23.3 151.9Q26.5 148.0 35.3 142.9Q44.0 137.8 68.0 126.6Q92.0 115.3 95.2 110.7Q98.4 106.0 101.6 103.0Q104.8 100.0 113.8 95.5Q122.7 91.0 127.0 82.0Q131.3 73.0 131.9 64.0Q132.5 55.0 130.3 51.0Q128.2 47.0 128.3 45.5Q128.3 44.0 129.7 42.6Q131.0 41.2 135.0 38.9Q139.0 36.7 141.7 32.8Q144.5 29.0 147.2 26.7Q150.0 24.5 150.8 22.7Q151.6 21.0 151.9 18.0Q152.1 15.0 153.1 13.9Q154.0 12.7 155.5 12.8Q157.0 12.9 158.2 13.9Q159.4 15.0 164.1 24.5Q168.9 34.0 170.9 36.0Q173.0 38.0 180.5 40.2Q188.0 42.5 192.5 42.1Q197.0 41.7 200.5 42.1Q204.0 42.6 209.5 45.1Q215.0 47.5 225.0 46.6Q235.0 45.6 237.4 46.8Q239.7 48.0 242.4 51.2Q245.0 54.4 247.5 55.0Q250.0 55.7 309.5 37.3Q369.0 18.9 393.5 12.6Q418.0 6.3 420.2 5.1Q422.5 4.0 423.7 2.0Q425.0 -0.0 468.2 -0.0Q511.5 0.0 511.2 9.1Q511.0 18.1 508.5 19.4Q506.0 20.7 497.5 28.5Q489.0 36.2 481.0 41.9Q473.0 47.5 461.5 54.3Q450.0 61.2 431.0 70.7Q412.0 80.2 371.0 97.1Q330.0 114.0 328.2 115.5Q326.4 117.0 323.7 121.5Q321.0 126.0 318.0 128.1Q315.0 130.2 278.0 143.5Q241.0 156.7 239.0 156.9Q237.0 157.1 231.5 155.4Q226.0 153.7 223.5 153.7Q221.0 153.7 174.0 167.5Q127.0 181.3 124.1 183.1Q121.3 185.0 117.6 191.3Q114.0 197.7 111.5 199.4Q109.0 201.1 106.9 200.5Q104.7 200.0 102.2 196.0Q99.6 192.0 97.8 190.8Q96.0 189.6 89.5 190.3Q83.0 191.1 80.0 193.2Q77.0 195.3 71.5 205.1Q66.0 215.0 66.0 215.0Z"/></symbol><symbol id="g-multitool" viewBox="-6.0 -116.0 524.0 524.0"><path fill="currentColor" fill-rule="evenodd" d="M241.0 291.2Q241.0 291.2 235.9 291.1Q230.9 291.0 229.0 287.5Q227.2 284.0 218.6 274.5Q210.0 265.1 202.9 255.5Q195.8 246.0 193.2 241.0Q190.6 236.0 190.1 232.0Q189.6 228.0 190.3 225.0Q191.0 222.0 192.5 219.9Q194.0 217.8 202.5 213.7Q211.0 209.6 214.0 207.5Q217.0 205.4 232.0 189.4Q247.0 173.5 266.6 155.8Q286.2 138.0 287.8 135.5Q289.4 133.0 289.4 131.0Q289.4 129.0 288.1 127.0Q286.9 125.0 262.2 104.0Q237.6 83.0 230.9 76.5Q224.2 70.0 222.8 67.5Q221.3 65.0 220.9 55.5Q220.5 46.0 221.3 42.5Q222.0 39.0 235.0 22.3Q248.0 5.5 249.4 2.8Q250.9 0.0 273.0 0.0Q295.2 0.0 296.1 1.7Q297.0 3.5 299.0 4.7Q301.0 5.9 314.0 8.5Q327.0 11.2 341.5 21.7Q356.0 32.2 365.3 37.6Q374.6 43.0 380.8 44.2Q387.0 45.5 399.0 43.0Q411.0 40.6 420.0 41.6Q429.0 42.7 439.0 46.5Q449.0 50.4 466.0 61.0Q483.0 71.6 485.5 72.1Q488.0 72.7 494.0 72.4Q500.0 72.0 505.5 75.4Q511.0 78.9 511.0 97.5Q511.0 116.1 508.6 117.6Q506.3 119.0 499.6 127.8Q493.0 136.7 489.5 140.2Q486.0 143.7 481.5 146.2Q477.0 148.7 471.5 149.9Q466.0 151.1 461.0 155.3Q456.0 159.5 453.0 160.3Q450.0 161.2 446.5 160.2Q443.0 159.2 433.5 153.3Q424.0 147.4 421.5 146.7Q419.0 145.9 416.5 146.0Q414.0 146.1 408.5 148.5Q403.0 151.0 395.5 160.0Q388.0 169.0 386.0 170.6Q384.0 172.2 382.0 172.4Q380.0 172.6 373.0 170.7Q366.0 168.7 362.0 169.5Q358.0 170.3 354.5 171.8Q351.0 173.4 346.8 176.7Q342.7 180.0 330.3 194.2Q318.0 208.4 304.2 222.7Q290.5 237.0 272.2 252.9Q254.0 268.9 250.0 274.9Q245.9 281.0 243.5 286.1Q241.0 291.2 241.0 291.2ZM263.9 82.0Q263.9 82.0 269.9 79.8Q276.0 77.5 280.6 73.3Q285.2 69.0 288.0 63.5Q290.8 58.0 291.5 52.0Q292.3 46.0 291.4 43.5Q290.6 41.0 288.8 39.0Q287.1 37.0 275.0 26.9Q263.0 16.7 260.0 15.8Q257.0 14.9 254.0 16.8Q251.0 18.8 242.0 29.9Q232.9 41.0 231.9 43.5Q230.9 46.0 230.8 50.5Q230.6 55.0 232.2 59.0Q233.8 63.0 242.4 70.5Q250.9 78.0 254.0 79.8Q257.0 81.6 260.4 81.8Q263.9 82.0 263.9 82.0ZM301.9 117.0Q301.9 117.0 304.5 114.9Q307.0 112.8 319.4 96.9Q331.8 81.0 332.0 79.0Q332.1 77.0 331.5 75.5Q330.9 74.0 326.5 70.2Q322.0 66.4 320.0 66.2Q318.0 65.9 316.0 66.9Q314.0 68.0 305.5 77.9Q297.0 87.8 289.0 90.1Q281.0 92.5 279.1 94.2Q277.2 96.0 277.4 98.5Q277.5 101.0 279.3 103.0Q281.0 105.1 288.0 110.6Q295.0 116.2 298.5 116.6Q301.9 117.0 301.9 117.0Z"/></symbol><symbol id="g-starship" viewBox="-6.0 -136.0 524.0 524.0"><path fill="currentColor" fill-rule="evenodd" d="M249.0 251.0Q249.0 251.0 163.0 251.0Q77.0 251.0 76.0 249.3Q75.0 247.5 73.5 246.5Q72.0 245.5 59.5 242.5Q47.0 239.5 35.0 235.0Q23.0 230.6 11.5 222.9Q0.0 215.1 -0.0 203.6Q-0.0 192.0 2.0 191.0Q4.0 189.9 13.5 181.1Q23.0 172.2 40.0 161.1Q57.0 149.9 74.5 140.9Q92.0 131.8 115.5 121.7Q139.0 111.7 150.5 98.1Q162.0 84.6 168.5 78.7Q175.0 72.8 184.5 65.8Q194.0 58.9 204.5 53.4Q215.0 47.9 225.0 44.6Q235.0 41.2 246.5 39.4Q258.0 37.5 270.0 37.7Q282.0 37.9 299.0 42.1Q316.0 46.3 326.0 45.9Q336.0 45.5 341.5 40.5Q347.0 35.4 349.0 32.2Q351.0 29.0 350.9 27.0Q350.9 25.0 348.4 21.0Q346.0 17.0 345.4 14.5Q344.7 12.0 345.2 9.5Q345.7 7.0 347.3 3.5Q348.9 0.0 349.4 -0.1Q350.0 -0.2 364.0 -0.1Q378.0 -0.0 379.2 2.0Q380.5 4.0 382.2 5.0Q384.0 6.1 400.5 10.9Q417.0 15.7 419.2 18.8Q421.5 22.0 421.5 25.5Q421.6 29.0 419.6 32.0Q417.6 35.0 412.3 37.4Q407.0 39.8 405.2 41.4Q403.4 43.0 402.1 49.0Q400.8 55.0 401.6 58.5Q402.4 62.0 409.9 69.0Q417.4 76.0 421.8 81.5Q426.1 87.0 429.2 92.5Q432.2 98.0 434.8 106.0Q437.4 114.0 438.8 116.0Q440.1 118.0 461.5 127.7Q483.0 137.4 489.4 141.7Q495.8 146.0 501.4 151.4Q507.0 156.8 509.0 157.8Q511.0 158.9 511.0 172.5Q511.0 186.1 508.5 187.4Q506.0 188.7 500.0 194.4Q494.0 200.0 487.5 204.1Q481.0 208.2 469.5 213.3Q458.0 218.4 445.0 222.3Q432.0 226.1 418.5 228.7Q405.0 231.2 388.5 233.3Q372.0 235.3 362.0 235.9Q352.0 236.5 330.5 236.3Q309.0 236.2 282.5 240.5Q256.0 244.9 253.8 245.9Q251.5 247.0 250.3 249.0Q249.0 251.0 249.0 251.0ZM239.5 140.0Q239.5 140.0 254.2 139.1Q269.0 138.2 285.5 135.7Q302.0 133.2 306.0 131.9Q310.0 130.6 312.1 128.3Q314.1 126.0 314.8 123.0Q315.4 120.0 315.3 114.0Q315.2 108.0 312.1 97.5Q309.1 87.0 302.6 77.8Q296.0 68.7 288.5 63.3Q281.0 57.9 273.5 55.1Q266.0 52.4 259.0 51.6Q252.0 50.7 242.0 52.2Q232.0 53.7 222.5 57.2Q213.0 60.8 201.5 67.7Q190.0 74.5 182.0 81.1Q174.0 87.6 165.5 96.8Q157.0 105.9 152.3 112.9Q147.6 120.0 147.8 122.5Q148.0 124.9 149.5 126.5Q151.0 128.1 163.0 131.6Q175.0 135.1 191.0 137.2Q207.0 139.4 223.2 139.7Q239.5 140.0 239.5 140.0Z"/></symbol><symbol id="g-words" viewBox="-6.0 -39.0 524.0 524.0"><path fill="currentColor" fill-rule="evenodd" d="M92.0 445.0Q92.0 445.0 76.5 445.2Q61.0 445.4 59.1 445.2Q57.2 445.0 57.2 444.5Q57.2 444.0 57.4 441.5Q57.7 439.0 62.9 428.5Q68.1 418.0 73.1 405.0Q78.1 392.0 82.1 375.0Q86.1 358.0 86.5 354.0Q86.9 350.0 86.5 348.0Q86.1 346.0 84.5 344.2Q83.0 342.3 68.8 331.2Q54.6 320.0 45.9 310.5Q37.2 301.0 28.8 288.5Q20.4 276.0 16.6 268.5Q12.9 261.0 9.0 250.5Q5.1 240.0 2.4 237.5Q-0.2 235.0 -0.1 194.9Q0.0 154.8 2.6 152.9Q5.1 151.0 10.5 137.5Q15.8 124.0 20.9 115.0Q25.9 106.0 31.5 98.1Q37.0 90.2 42.3 84.1Q47.6 78.0 52.6 73.0Q57.7 68.0 66.3 61.0Q74.9 54.0 84.9 47.3Q95.0 40.6 103.0 36.2Q111.0 31.8 130.5 23.8Q150.0 15.9 168.5 10.9Q187.0 6.0 189.0 4.7Q191.0 3.5 191.9 1.7Q192.8 0.0 194.9 -0.2Q197.0 -0.4 259.1 -0.2Q321.2 0.0 322.1 1.7Q323.0 3.5 324.5 4.5Q326.0 5.5 346.5 11.2Q367.0 16.8 383.5 23.8Q400.0 30.8 415.5 40.1Q431.0 49.5 441.0 57.5Q451.0 65.6 459.6 74.3Q468.2 83.0 477.1 95.2Q486.0 107.3 490.8 116.2Q495.6 125.0 500.5 138.0Q505.4 151.0 506.5 152.5Q507.5 154.0 509.3 154.9Q511.0 155.8 511.2 157.9Q511.4 160.0 511.2 197.1Q511.0 234.2 508.4 236.1Q505.9 238.0 500.5 252.0Q495.2 266.0 490.1 275.0Q485.1 284.0 479.7 291.5Q474.3 299.0 467.4 307.0Q460.4 315.0 450.2 323.9Q440.0 332.8 424.0 343.0Q408.0 353.2 393.5 359.6Q379.0 366.1 365.5 370.2Q352.0 374.4 340.0 376.8Q328.0 379.2 313.5 380.8Q299.0 382.4 277.0 382.5Q255.0 382.5 231.0 381.0Q207.0 379.5 203.0 380.0Q199.0 380.4 183.0 392.1Q167.0 403.8 157.5 409.9Q148.0 416.0 135.5 422.6Q123.0 429.2 110.0 434.3Q97.0 439.4 95.5 440.4Q94.0 441.5 93.0 443.3Q92.0 445.0 92.0 445.0Z"/></symbol><symbol id="s-explorer" viewBox="-6.0 -6.0 524.0 252.0"><path fill="currentColor" fill-rule="evenodd" d="M485.0 239.3L399.0 239.4L397.0 239.0L394.0 236.6L379.0 235.4L348.0 230.4L322.0 225.2L300.0 219.3L292.0 220.5L286.0 220.1L262.0 210.4L256.0 205.8L221.0 191.9L214.0 191.4L210.0 190.2L173.0 174.3L126.0 139.8L122.0 137.6L102.0 139.2L99.0 140.3L95.0 140.3L92.0 141.3L88.0 141.3L85.0 142.3L80.0 142.4L73.0 143.8L71.2 146.0L71.6 148.0L93.4 175.0L94.0 177.0L93.0 178.0L89.0 177.4L70.0 171.7L67.0 172.3L58.2 177.0L56.0 177.1L39.9 169.0L19.5 145.0L10.7 140.0L5.0 134.6L0.0 131.6L-0.2 128.0L0.0 127.5L7.0 127.1L9.2 126.0L10.6 124.0L11.0 121.0L12.4 118.0L12.4 115.0L11.4 113.0L7.9 110.0L6.8 108.0L7.0 106.9L11.0 105.3L12.0 104.0L12.0 102.0L10.5 99.0L12.9 94.0L14.0 93.3L34.0 100.5L36.0 101.9L64.6 139.0L67.0 141.0L72.0 141.5L82.0 139.7L88.0 139.7L98.0 137.7L103.0 137.8L106.0 136.7L110.0 136.7L115.0 135.1L116.5 133.0L115.7 130.0L116.0 128.0L117.8 126.0L122.0 123.9L135.0 120.1L136.3 119.0L137.2 117.0L135.0 113.5L128.0 108.2L126.0 105.0L125.5 103.0L125.6 99.0L127.0 95.8L129.0 93.8L133.0 92.1L138.0 88.4L139.6 85.0L139.0 82.7L133.3 78.0L132.6 76.0L133.3 73.0L139.0 70.3L140.0 68.0L134.6 35.0L134.3 29.0L135.0 28.0L136.0 27.9L138.1 30.0L143.6 64.0L146.0 69.3L148.0 70.4L157.0 70.6L162.0 72.0L164.0 71.3L165.4 69.0L165.8 57.0L167.5 53.0L168.0 52.2L169.0 52.4L171.4 57.0L171.6 64.0L173.0 72.0L174.8 74.0L177.0 75.1L185.0 77.0L187.2 76.0L187.7 74.0L180.6 31.0L181.0 27.7L183.0 27.2L184.3 29.0L191.4 71.0L190.7 76.0L192.0 78.3L198.0 80.4L201.0 84.3L204.0 85.8L207.0 86.0L210.0 83.3L212.0 82.7L230.0 86.9L232.1 88.0L238.0 94.1L260.0 99.9L262.4 102.0L265.9 114.0L270.0 117.7L324.0 138.8L358.0 153.3L365.0 157.7L375.0 162.2L420.0 178.8L462.0 196.3L494.0 211.8L504.2 218.0L511.0 224.0L511.3 229.0L511.0 230.0L509.0 231.2L499.0 235.2L488.0 237.0L485.0 239.3Z"/></symbol><symbol id="s-fighter" viewBox="-6.0 -6.0 524.0 142.0"><path fill="currentColor" fill-rule="evenodd" d="M108.0 129.3L71.0 129.5L67.0 129.0L69.0 126.8L115.0 96.2L116.4 94.0L116.0 92.8L114.0 91.7L100.0 91.5L96.7 90.0L95.6 88.0L95.0 80.0L93.0 78.0L89.0 77.3L87.0 75.9L86.5 68.0L87.5 64.0L86.0 62.0L80.0 61.9L75.0 59.0L26.0 67.4L15.0 67.5L2.2 66.0L2.0 65.0L5.0 62.8L34.0 47.1L35.4 45.0L34.2 43.0L31.3 41.0L6.0 26.2L3.8 24.0L4.3 23.0L6.0 22.6L23.0 21.4L25.0 20.3L25.8 19.0L25.3 17.0L24.0 15.8L7.0 6.2L4.5 4.0L4.6 3.0L8.0 0.0L12.0 -0.5L45.0 -0.3L49.0 2.4L151.0 24.0L156.0 22.6L188.0 18.6L191.0 18.6L195.0 20.4L199.0 20.5L209.0 18.6L253.0 13.6L263.0 13.5L266.0 14.9L272.0 22.0L281.0 23.4L305.0 24.5L323.0 26.5L332.0 26.5L349.0 28.5L355.0 28.4L358.0 27.3L364.0 28.5L368.0 26.3L371.0 27.0L376.0 26.6L492.0 41.4L499.0 41.6L506.0 42.9L510.2 45.0L508.2 47.0L504.0 48.2L484.0 51.4L435.0 55.5L430.0 56.5L424.0 56.5L419.0 57.5L413.0 57.5L408.0 58.5L402.0 58.5L397.0 59.5L391.0 59.5L386.0 60.5L380.0 60.5L375.0 61.5L367.0 61.6L358.0 62.6L354.0 65.0L348.0 66.4L338.0 66.5L333.0 67.4L326.0 64.7L281.0 69.6L114.0 125.8L111.0 126.9L108.0 129.3Z"/></symbol><symbol id="s-hauler" viewBox="-6.0 -6.0 524.0 97.0"><path fill="currentColor" fill-rule="evenodd" d="M303.0 84.2L299.5 84.0L298.0 80.5L295.0 77.6L293.0 76.7L287.0 77.5L267.0 77.4L264.0 76.2L260.0 73.0L258.0 72.5L248.0 72.6L244.0 74.2L239.0 72.5L223.0 72.5L210.0 76.4L204.0 76.6L198.0 80.4L163.0 80.5L159.0 80.0L154.0 76.3L148.0 73.3L145.0 72.5L93.0 72.4L91.6 72.0L89.0 68.7L87.0 67.7L84.0 68.7L81.0 72.2L69.0 72.4L53.0 70.4L49.0 68.6L37.0 66.6L7.0 62.3L5.0 61.0L3.3 56.0L0.0 54.5L-0.4 48.0L0.0 46.5L3.3 45.0L5.3 40.0L8.0 38.6L42.0 34.4L49.0 33.4L53.0 31.6L71.0 29.5L81.0 29.8L84.0 33.3L87.0 34.3L89.0 33.3L92.0 29.8L109.0 29.5L113.0 28.7L116.0 24.8L127.0 26.9L137.0 17.6L142.0 15.3L144.0 12.6L145.0 12.6L146.6 15.0L149.0 16.4L154.0 16.4L158.1 15.0L163.9 10.0L162.6 4.0L164.0 3.2L167.0 3.2L169.0 -0.0L170.1 0.0L172.0 3.2L176.0 3.2L176.7 4.0L175.4 10.0L176.5 12.0L179.0 14.1L184.0 16.4L194.0 16.9L200.0 20.4L209.0 21.0L218.0 27.4L223.0 27.4L233.0 24.5L248.0 24.5L254.0 25.5L266.0 25.5L271.0 26.5L297.0 27.5L302.0 28.5L330.0 29.5L349.0 31.5L355.0 30.5L364.0 32.5L388.0 33.5L393.0 34.5L403.0 34.5L408.0 35.5L418.0 35.5L423.0 36.5L433.0 36.5L438.0 37.5L454.0 37.6L504.0 44.6L511.0 47.1L511.3 48.0L511.0 52.9L508.0 54.1L457.0 62.4L428.0 64.5L413.0 66.5L406.0 66.5L392.0 68.4L331.0 73.5L316.0 75.5L309.0 75.6L304.6 78.0L303.6 80.0L303.5 84.0L303.0 84.2Z"/></symbol><symbol id="s-living" viewBox="-6.0 -6.0 524.0 243.0"><path fill="currentColor" fill-rule="evenodd" d="M109.0 230.3L83.0 230.5L80.0 230.0L78.0 227.9L65.0 222.3L57.0 217.2L51.5 213.0L40.6 202.0L30.8 188.0L24.7 176.0L18.8 160.0L15.7 148.0L7.8 135.0L2.1 121.0L0.0 119.0L-0.4 89.0L0.0 87.0L2.1 85.0L6.0 74.6L11.0 66.8L19.6 58.0L24.8 54.0L37.0 46.3L52.0 39.2L62.0 29.6L80.0 16.9L98.0 7.9L116.0 2.1L119.0 -0.3L151.0 -0.5L155.0 0.0L157.0 2.0L165.0 4.8L180.0 12.8L192.0 24.4L207.0 36.2L218.0 42.3L228.0 46.0L247.0 42.6L256.0 41.5L265.0 41.4L269.0 40.5L283.0 40.5L288.0 41.5L297.0 41.5L331.0 46.6L345.0 49.8L372.0 57.8L406.0 70.8L447.0 89.7L490.0 113.8L507.0 124.8L511.0 128.0L511.3 129.0L511.0 132.0L505.0 135.2L470.0 142.4L394.0 153.4L337.0 158.5L323.0 158.5L309.0 156.2L292.0 148.2L285.0 142.0L278.0 141.8L275.9 141.0L272.0 138.0L266.0 138.1L260.0 134.0L256.0 133.8L248.0 136.9L240.0 141.8L229.0 152.5L224.9 159.0L217.0 180.2L210.0 193.1L205.0 199.4L199.9 203.0L194.1 205.0L190.4 205.0L190.1 204.0L194.0 203.6L197.0 202.5L201.0 199.7L208.3 191.0L213.8 180.0L217.2 171.0L227.9 133.0L232.0 124.8L237.4 120.0L238.5 118.0L238.0 116.8L236.0 115.4L229.0 116.0L224.0 114.4L217.0 116.4L213.0 116.4L208.0 119.1L204.0 119.1L199.0 122.3L194.0 122.0L186.0 127.6L180.0 133.5L172.8 145.0L164.2 170.0L158.3 184.0L148.0 201.2L138.0 212.5L130.2 219.0L119.0 225.3L112.0 227.9L109.0 230.3ZM197.5 58.0L200.0 56.4L202.0 54.0L201.4 49.0L197.3 39.0L190.4 28.0L172.0 12.8L165.0 8.8L156.0 5.8L151.0 4.6L146.0 4.5L137.0 6.9L136.2 4.0L134.0 2.7L118.0 4.8L110.0 6.8L98.0 11.2L83.0 18.8L75.8 24.0L75.9 26.0L77.0 26.8L86.0 26.4L102.0 21.6L120.0 19.5L137.0 20.6L149.0 22.9L164.0 27.9L175.2 34.0L180.0 38.1L185.0 43.8L192.0 57.4L194.0 58.9L197.5 58.0ZM166.3 81.0L178.0 69.6L186.2 64.0L187.6 62.0L187.2 58.0L185.1 52.0L180.0 43.7L176.0 39.5L166.0 32.9L159.0 29.8L144.0 25.6L129.0 23.5L117.0 23.5L114.0 23.8L110.0 25.8L109.6 27.0L110.9 29.0L120.0 32.7L131.0 38.8L143.0 48.5L150.4 57.0L155.2 64.0L163.0 80.1L165.0 81.5L166.3 81.0ZM75.5 177.0L84.0 175.1L94.0 170.2L98.0 167.4L106.5 159.0L112.2 151.0L125.8 125.0L133.6 114.0L138.8 108.0L145.0 102.6L157.0 94.4L159.2 91.0L155.2 77.0L151.2 69.0L143.4 58.0L137.0 51.5L125.0 42.8L119.0 39.7L109.0 35.8L99.0 33.6L83.0 33.6L78.0 35.0L76.9 36.0L76.9 38.0L78.0 39.1L86.7 42.0L89.6 44.0L90.5 45.0L90.0 45.5L81.0 42.4L64.0 42.5L59.0 43.9L54.0 48.5L45.8 58.0L35.7 75.0L29.8 90.0L25.6 107.0L24.5 115.0L24.5 137.0L26.6 150.0L28.6 155.0L37.0 163.2L39.0 163.2L41.0 161.1L46.0 149.5L51.6 141.0L57.8 135.0L65.0 130.7L71.0 128.6L82.0 128.6L89.0 131.8L94.2 136.0L97.7 142.0L99.3 148.0L99.3 151.0L98.0 155.8L96.0 158.8L95.3 158.0L96.6 153.0L96.4 150.0L95.2 146.0L92.4 141.0L88.0 136.6L85.0 134.7L76.0 132.6L67.0 134.8L61.0 138.6L53.0 146.8L47.3 157.0L44.7 167.0L45.6 169.0L47.8 171.0L61.0 176.4L67.0 177.5L75.5 177.0ZM210.6 52.0L217.0 49.3L217.8 48.0L217.3 46.0L205.0 38.8L203.0 39.0L202.5 41.0L205.9 51.0L208.0 52.6L210.6 52.0ZM13.2 132.0L14.5 129.0L14.5 118.0L15.6 109.0L19.8 91.0L26.9 73.0L38.3 54.0L38.1 52.0L37.0 51.2L34.0 51.8L25.0 57.8L16.0 65.4L9.7 74.0L4.8 86.0L2.5 100.0L2.5 106.0L3.6 114.0L8.2 129.0L11.0 132.2L13.2 132.0ZM239.2 96.0L241.4 94.0L242.4 92.0L246.4 74.0L246.0 71.0L243.0 68.7L240.0 69.7L238.5 72.0L234.7 93.0L235.0 95.0L236.0 96.2L237.0 96.6L239.2 96.0ZM225.3 100.0L227.4 94.0L230.3 74.0L230.0 72.0L228.0 70.5L226.0 71.5L224.0 74.0L221.5 88.0L221.0 99.0L223.0 100.8L225.3 100.0ZM255.3 87.0L257.7 84.0L261.8 75.0L261.3 72.0L259.0 70.7L257.0 71.0L255.7 72.0L253.8 77.0L252.4 86.0L254.0 87.4L255.3 87.0ZM170.2 121.0L177.6 110.0L186.0 101.0L185.5 97.0L183.0 93.8L181.0 93.8L179.0 95.8L173.8 103.0L169.7 111.0L167.0 119.0L168.0 121.1L170.2 121.0ZM101.5 219.0L113.0 215.3L124.0 208.4L133.4 199.0L143.3 184.0L149.2 169.0L153.4 150.0L155.6 126.0L158.2 112.0L157.0 109.8L154.0 109.9L147.8 114.0L136.6 125.0L131.8 132.0L119.2 155.0L114.0 162.2L104.0 172.4L97.0 177.2L88.0 181.5L75.0 184.5L68.0 184.4L58.0 182.2L47.0 177.5L45.0 177.8L44.0 179.0L43.6 185.0L46.0 193.1L51.0 199.5L58.0 206.4L63.0 210.2L75.0 216.7L83.0 219.2L98.0 219.5L101.5 219.0ZM284.3 136.0L289.2 129.0L296.7 114.0L296.9 112.0L295.0 110.0L293.0 110.0L290.8 112.0L280.8 132.0L280.4 134.0L281.0 135.3L283.0 136.5L284.3 136.0ZM233.3 142.0L238.0 137.8L250.2 130.0L250.5 128.0L248.0 122.8L246.0 122.3L242.0 123.3L238.0 125.6L234.6 129.0L229.9 139.0L230.0 141.0L230.8 142.0L232.0 142.5L233.3 142.0Z"/></symbol></svg><!-- SPRITE:END -->
+<div class="app">
+  <header class="top">
+    <div class="lights" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="brand">
+      <svg viewBox="0 0 38 22" aria-hidden="true"><defs><radialGradient id="sunf" cx="40%" cy="38%" r="60%"><stop offset="0" stop-color="oklch(97% 0.04 75)"/><stop offset="1" stop-color="oklch(84% 0.12 60)"/></radialGradient></defs><path d="M4 16.5C9 5 29 5 34 16.5" fill="none" stroke="oklch(87% 0.105 62 / .45)" stroke-width="1"/><circle cx="12" cy="11" r="7" fill="url(#sunf)"/><circle cx="29" cy="11" r="4.2" fill="none" stroke="oklch(87% 0.075 205)" stroke-width="1.4"/></svg>
+      <h1 class="word" translate="no" style="margin:0;font-weight:300">parhelion</h1><span class="sub">for No Man’s Sky</span><span class="sr-only">Merge Studio</span>
+    </div>
+    <nav class="cats glass" id="cats" aria-label="What to merge"></nav>
+    <button type="button" class="search glass" data-action="palette" aria-haspopup="dialog" aria-expanded="false" aria-keyshortcuts="Meta+K" aria-label="Search or run a command"><span class="long">Search or run a command</span><kbd>⌘K</kbd></button>
+  </header>
+  <main class="stage">
+    <section class="hero glass" id="dest" data-dropzone aria-labelledby="dest-title"></section>
+    <section class="orbit glass" id="src" aria-labelledby="src-title"></section>
+    <aside class="changes glass" id="changes" aria-labelledby="ch-title"></aside>
+  </main>
+</div>
+<svg class="tether" id="tether" aria-hidden="true">
+  <defs><linearGradient id="tg" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="0"><stop offset="0" stop-color="oklch(87% 0.075 205)"/><stop offset="1" stop-color="oklch(87% 0.105 62)"/></linearGradient></defs>
+  <path class="glow" id="t-glow" d=""/><path id="t-line" d=""/>
+</svg>
+
+<script>
+/* ---------- Parhelion view ---------- */
+window.View = (() => {
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const g = (id, cls = '') => `<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
+  const icon = {
+    lock: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="2"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>',
+    revert: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>',
+    undo: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 7h6.5a3 3 0 0 1 0 6H8"/><path d="M6.5 4.5L4 7l2.5 2.5"/></svg>',
+    redo: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M12 7H5.5a3 3 0 0 0 0 6H8"/><path d="M9.5 4.5L12 7 9.5 9.5"/></svg>',
+    check: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg>',
+  };
+  const shortN = n => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e4 ? (n / 1e3).toFixed(1) + 'K' : MS.fmt(n);
+
+  function cats(Q, S) {
+    $('#cats').innerHTML = Q.cats.map(c => `<button type="button" class="cat" data-action="cat" data-cat="${c.id}" data-focus-key="cat:${c.id}" aria-current="${S.cat === c.id}" aria-keyshortcuts="${c.key}">${g('g-' + c.glyph)}${c.label}</button>`).join('');
+  }
+  function ring(Q, S, cat) {
+    const k = Q.cap(cat), N = k.cap, R = 50, C = 59, gap = N > 12 ? 5 : 9;
+    let segs = '';
+    for (let i = 0; i < N; i++) {
+      const a0 = -90 + (i * 360) / N + gap / 2, a1 = -90 + ((i + 1) * 360) / N - gap / 2;
+      const p = a => [C + R * Math.cos(a * Math.PI / 180), C + R * Math.sin(a * Math.PI / 180)];
+      const [x0, y0] = p(a0), [x1, y1] = p(a1);
+      const cls = i < k.own ? 'on' : i < k.used ? 'staged' : '';
+      const isNew = S.fx.arrive && i === k.used - 1 && i >= k.own;
+      segs += `<path class="seg ${cls}${isNew ? ' is-new' : ''}" d="M${x0.toFixed(2)} ${y0.toFixed(2)}A${R} ${R} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}"/>`;
+    }
+    return `<div class="ring" role="meter" aria-label="${Q.cat(cat).label}" aria-valuemin="0" aria-valuemax="${N}" aria-valuenow="${k.used}" aria-valuetext="${k.used} of ${N}${k.staged ? ', ' + k.staged + ' staged' : ''}">
+      <svg viewBox="0 0 118 118" aria-hidden="true">${segs}</svg>
+      <div class="c"><span class="big num" data-num="cap-${cat}">${k.used}</span><span class="of">of ${N}</span></div></div>`;
+  }
+  function side(Q, S) {
+    const u = Q.currency()[0], kb = Q.knowledge()[0];
+    const rows = ['ships', 'tools', 'pets'].filter(c => c !== S.cat).map(c => {
+      const k = Q.cap(c);
+      return `<div class="g-row">${g('g-' + Q.cat(c).glyph)}<span>${Q.cat(c).label}</span><b class="num${k.staged ? ' up' : ''}">${k.used} / ${k.cap}</b></div>`;
+    });
+    rows.push(`<div class="g-row">${g('g-currency')}<span>Units</span><b class="num${u.staged && u.result !== u.a ? ' up' : ''}">${shortN(u.result)}</b></div>`);
+    rows.push(`<div class="g-row">${g('g-blueprint')}<span>Blueprints</span><b class="num${kb.staged ? ' up' : ''}">${kb.result}</b></div>`);
+    return `<div class="g-side">${rows.join('')}</div>`;
+  }
+  function hero(Q, S) {
+    const A = Q.saves.A, c = Q.cat(S.cat), isNew = S.target === 'new';
+    let body, gauge;
+    if (c.cap) {
+      const items = Q.destItems(S.cat), k = Q.cap(S.cat);
+      const cells = [];
+      for (let i = 0; i < k.cap; i++) {
+        const it = items[i];
+        if (it) {
+          const art = S.cat === 'ships' ? g('s-' + it.sil, 'art') : g('g-' + c.glyph, 'art');
+          cells.push(`<div class="card${it.staged ? ' is-staged' : ''}" data-dest-item="${it.id}">${art}<b>${esc(it.name)}</b><span class="s">${esc(it.cls)}${it.rank ? ' · ' + it.rank : ''}</span>${it.staged ? '<span class="pip">Staged</span>' : ''}</div>`);
+        } else {
+          const next = i === items.length;
+          cells.push(`<div class="card is-empty"${next ? ' data-next-slot' : ''}><span class="open">${next ? '<span class="nf">Next free</span><span class="here">Let go here</span>' : ''}</span></div>`);
+        }
+      }
+      body = `<div class="bay-area"><div class="bay-cap"><span>${c.id === 'ships' ? 'Your hangar' : c.id === 'tools' ? 'Your multitools' : 'Your companions'}</span><span>${k.free} open</span></div>
+        <div class="berths" data-cat="${S.cat}">${cells.join('')}</div></div>`;
+      gauge = `<div class="gauge">${ring(Q, S, S.cat)}${side(Q, S)}</div>`;
+    } else if (S.cat === 'currency') {
+      body = `<div class="rows">${Q.currency().map(r => `<div class="vrow">${g('g-currency')}<span class="k">${r.label}</span>
+        <span class="v num">${Q.fmt(r.a)}<small>yours now</small></span>
+        <span class="v num${r.staged && r.result !== r.a ? ' up' : ''}">${Q.fmt(r.result)}<small>after Write</small></span>
+        ${r.staged ? '<span class="pill is-staged">Staged</span>' : `<button type="button" class="pill" data-action="stage-currency" data-cid="${r.id}" data-focus-key="cur:${r.id}">Merge ${r.label}</button>`}</div>`).join('')}</div>`;
+      gauge = `<div class="gauge">${side(Q, S)}</div>`;
+    } else {
+      body = `<div class="rows">${Q.knowledge().map(r => `<div class="vrow">${g('g-' + r.glyph)}<span class="k">${r.label}</span>
+        <span class="v num">${Q.fmt(r.a)}<small>yours now</small></span>
+        <span class="v num${r.staged ? ' up' : ''}">${Q.fmt(r.result)}<small>after Write</small></span>
+        ${r.staged ? '<span class="pill is-staged">Staged</span>' : r.gain > 0 ? `<button type="button" class="pill" data-action="learn" data-kid="${r.id}" data-focus-key="kn:${r.id}">Learn ${r.gain}</button>` : '<span class="pill is-none">Nothing New</span>'}</div>`).join('')}</div>`;
+      gauge = `<div class="gauge">${side(Q, S)}</div>`;
+    }
+    $('#dest').innerHTML = `<div class="h-top"><div>
+        <div class="eyebrow">Into
+          <span class="toggle" role="radiogroup" aria-label="Write to">
+            <button type="button" role="radio" aria-checked="${!isNew}" data-action="target" data-target="A" data-focus-key="tgt:A">This save</button>
+            <button type="button" role="radio" aria-checked="${isNew}" data-action="target" data-target="new" data-focus-key="tgt:new">A new slot</button>
+          </span></div>
+        <h2 class="name" id="dest-title" translate="no">${isNew ? `New save <span class="dim">· slot ${Q.newSlot}</span>` : esc(A.name)}</h2>
+        <p class="meta">${isNew ? `<span>Starts as a copy of ${esc(A.name)}</span><span>${esc(A.name)} stays untouched</span>` : `<span>Slot ${A.slot}</span><span>${A.hours}</span><span>${A.mode}</span><span>saved ${A.saved}</span>`}</p>
+      </div>${gauge}</div>${body}`;
+  }
+  function orbit(Q, S) {
+    const c = Q.cat(S.cat), B = Q.saves.B;
+    let body;
+    if (c.cap) {
+      const cap = Q.cap(S.cat);
+      const cols = Math.max(6, Q.srcItems(S.cat).length);
+      body = `<div class="tiles" style="grid-template-columns:repeat(${cols},minmax(0,1fr))">${Q.srcItems(S.cat).map(it => {
+        const dis = it.staged || it.present || cap.free <= 0;
+        const art = S.cat === 'ships' ? g('s-' + it.sil, 'art') : g('g-' + c.glyph, 'art');
+        const label = `${it.name}, ${it.cls}${it.rank ? ', ' + it.rank + '-class' : ''}. ` +
+          (it.staged ? 'Already staged.' : it.present ? 'Already in ' + Q.saves.A.name + '.' : cap.free <= 0 ? 'No room left.' : 'Press Enter to bring it into ' + Q.targetName() + ', or drag it up.');
+        return `<button type="button" class="tile" data-src-item="${it.id}" data-cat="${S.cat}" data-focus-key="src:${it.id}" aria-label="${esc(label)}"${dis ? ' aria-disabled="true"' : ''}>
+          ${art}<b>${esc(it.name)}</b><span class="s">${esc(it.cls)}${it.rank ? ' · ' + it.rank : ''}</span>
+          ${it.staged ? '<span class="tag staged">Staged</span>' : it.present ? '<span class="tag present">Aboard</span>' : '<span class="lift" aria-hidden="true">↑ Lift</span>'}</button>`;
+      }).join('')}</div>`;
+    } else if (S.cat === 'currency') {
+      body = `<div class="vals">${Q.currency().map(r => `<div class="val"><span class="k">${g('g-currency')}${r.label}</span><span class="v num">${Q.fmt(r.b)}</span></div>`).join('')}</div>`;
+    } else {
+      body = `<div class="vals">${Q.knowledge().map(r => `<div class="val"><span class="k">${g('g-' + r.glyph)}${r.label}</span><span class="v num">${Q.fmt(r.b)}</span></div>`).join('')}</div>`;
+    }
+    $('#src').innerHTML = `<div class="o-head"><span class="from">From</span><h2 id="src-title" translate="no">${esc(B.name)}</h2><span class="from">slot ${B.slot} · ${B.hours} · saved ${B.saved.toLowerCase()}</span>
+      <span class="ro">${icon.lock}Only read, never changed</span></div>${body}`;
+  }
+  function changes(Q, S) {
+    const list = Q.changes(), n = list.length;
+    let mid;
+    if (S.phase === 'written') {
+      const w = S.lastWrite;
+      mid = `<div class="done" role="status"><div class="orb">${icon.check}</div><h3>Written</h3>
+        <p>${w.count} change${w.count === 1 ? '' : 's'} saved to ${esc(w.target)} at ${esc(w.at)}.</p>
+        <p>A backup came first: ${esc(w.backup)}</p>
+        <button type="button" class="soft" data-action="resume" data-focus-key="resume">Keep Merging</button></div>`;
+    } else if (!n) {
+      mid = `<div class="c-empty">Nothing yet. Lift something from ${esc(Q.saves.B.name)} into ${esc(Q.targetName())} and it will appear here, one line per change.</div>`;
+    } else {
+      mid = `<ol class="clist">${list.map(d => `<li class="ch${d.noop ? ' is-noop' : ''}" data-change="${d.id}">
+        <span class="gl">${g('g-' + d.glyph)}</span>
+        <div><p class="line"><span class="verb">${d.verb}</span>${esc(d.subject)}</p>
+          <p class="det">${esc(d.kind === 'copy' ? `${d.item.cls}${d.item.rank ? ' · ' + d.item.rank : ''} → berth ${d.pos}` : d.detail)}</p>
+          ${d.conflict ? `<fieldset class="seg3"><legend class="sr-only">${esc(d.subject)}: how should the two balances combine?</legend>${Q.choices.map(c => `<label><input type="radio" name="ch-${d.id}" value="${c.id}" data-choice="${d.id}" data-focus-key="choice:${d.id}:${c.id}"${d.choice === c.id ? ' checked' : ''}><span>${c.label}</span></label>`).join('')}</fieldset>` : ''}
+        </div>
+        <button type="button" class="rev" data-action="revert" data-id="${d.id}" data-focus-key="revert:${d.id}" aria-label="Revert: ${esc(d.verb + ' ' + d.subject)}" title="Revert">${icon.revert}</button></li>`).join('')}</ol>`;
+    }
+    const writing = S.phase === 'writing';
+    $('#changes').innerHTML = `<div class="c-head"><h2 id="ch-title" tabindex="-1" data-focus-key="changes">Changes <span class="n num${n ? '' : ' zero'}" data-num="ch-n">${n}</span></h2>
+        <p>${S.phase === 'written' ? 'Everything is safely on disk.' : 'Held in memory. Nothing is written until you press Write.'}</p></div>${mid}
+      <div class="c-foot">
+        <div class="ur">
+          <button type="button" class="soft" data-action="undo" data-focus-key="undo"${Q.canUndo() ? '' : ' disabled'}>${icon.undo}Undo <kbd>⌘Z</kbd></button>
+          <button type="button" class="soft" data-action="redo" data-focus-key="redo"${Q.canRedo() ? '' : ' disabled'}>${icon.redo}Redo <kbd>⇧⌘Z</kbd></button>
+        </div>
+        <p class="calm">A backup is made first, every time.</p>
+        <button type="button" class="write${writing ? ' is-writing' : ''}" data-action="write" data-focus-key="write" aria-keyshortcuts="Meta+S"${n && !writing ? '' : ' disabled'}>
+          <span>${writing ? 'Writing…' : n ? `Write ${n} Change${n === 1 ? '' : 's'}` : 'Write'}<small>${S.target === 'new' ? `to a new save in slot ${Q.newSlot}` : `to ${esc(Q.saves.A.name)}`} · ⌘S</small></span></button>
+      </div>`;
+  }
+  function render(Q, S) { cats(Q, S); hero(Q, S); orbit(Q, S); changes(Q, S); }
+
+  function ghost(it, cat) {
+    const c = MS.Q.cat(cat);
+    const el = document.createElement('div');
+    el.className = 'card is-staged';
+    el.innerHTML = `${cat === 'ships' ? g('s-' + it.sil, 'art') : g('g-' + c.glyph, 'art')}<b>${esc(it.name)}</b><span class="s">${esc(it.cls)}${it.rank ? ' · ' + it.rank : ''}</span><span class="pip">Staged</span>`;
+    return el;
+  }
+  /* the tether: a soft arc of light from the other save up into yours (sky → sun) */
+  const T = { el: null, ox: 0, oy: 0 };
+  function onDragStart(ctx) {
+    if (ctx.keyboard) return;
+    T.el = $('#tether'); const r = ctx.origin; T.ox = r.left + r.width / 2; T.oy = r.top + 10;
+    T.el.classList.add('on');
+  }
+  function onDragMove(ctx) {
+    if (!T.el) return;
+    const x = ctx.x, y = ctx.y, cx = (T.ox + x) / 2, cy = Math.min(T.oy, y) - 40;
+    const d = `M${T.ox},${T.oy} Q${cx},${cy} ${x},${y}`;
+    $('#t-line').setAttribute('d', d); $('#t-glow').setAttribute('d', d);
+    const lg = $('#tg'); lg.setAttribute('x1', T.ox); lg.setAttribute('y1', T.oy); lg.setAttribute('x2', x); lg.setAttribute('y2', y);
+  }
+  function onDragEnd() { T.el?.classList.remove('on'); }
+  return { render, ghost, onDragStart, onDragMove, onDragEnd };
+})();
+</script>
+<script>
+/* CORE:BEGIN */
+/* ============================================================================
+   Merge Studio comp engine — shared by all three directions (inlined by
+   _tools/assemble.py between the CORE markers; edit here, not in index.html).
+   Owns: fictional data, staged-change state, undo/redo, springs, drag & drop,
+   keyboard, command palette, live announcements. Each comp supplies
+   window.View = { render(Q,S), ghost(item,cat), onDragStart?, onDragMove?, onDragEnd? }.
+   Nothing here touches a disk: "Write" is simulated.
+   ========================================================================== */
+(() => {
+'use strict';
+const mqReduce = matchMedia('(prefers-reduced-motion: reduce)');
+const reduced = () => mqReduce.matches || document.documentElement.dataset.motion === 'reduce';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const NF = new Intl.NumberFormat();
+const fmt = n => NF.format(n);
+const DT_STAMP = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+const DT_TIME = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' });
+const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+
+/* ---------- fictional data (invented names only) ---------- */
+const SAVES = {
+  A: { key: 'A', name: 'Vesper Drift', slot: 2, hours: '214 h', mode: 'Normal', saved: '2 days ago', freighter: 'Anvil of Rest', bases: 4, exocraft: 3 },
+  B: { key: 'B', name: 'Hollow Meridian', slot: 4, hours: '96 h', mode: 'Normal', saved: 'Today, 09:14', freighter: 'Long Quiet', bases: 2, exocraft: 5 },
+};
+const NEW_SLOT = 5;
+const CATS = [
+  { id: 'ships', label: 'Starships', one: 'starship', glyph: 'starship', cap: 12, key: '1', place: 'bay' },
+  { id: 'tools', label: 'Multitools', one: 'multitool', glyph: 'multitool', cap: 6, key: '2', place: 'rack' },
+  { id: 'pets', label: 'Companions', one: 'companion', glyph: 'companion', cap: 30, key: '3', place: 'slot' },
+  { id: 'currency', label: 'Currencies', glyph: 'currency', key: '4' },
+  { id: 'knowledge', label: 'Knowledge', glyph: 'blueprint', key: '5' },
+];
+const petA = ['Juniper','Fennick','Sorrel','Pip','Marlo','Ottoline','Biscuit','Quill','Tansy','Rook','Nettle','Wick','Hazel','Clove','Ember','Moth','Sprocket','Dune'];
+const species = ['Glimmerback','Mossjaw','Skitterfin','Dunestrider','Tallowcat','Hornet Hound'];
+const ITEMS = {
+  ships: {
+    A: [
+      { id: 's-a1', name: 'Vesper’s Needle', cls: 'Fighter', sil: 'fighter', rank: 'A', slots: 38 },
+      { id: 's-a2', name: 'Quiet Anvil', cls: 'Hauler', sil: 'hauler', rank: 'B', slots: 48 },
+      { id: 's-a3', name: 'Pale Courier', cls: 'Shuttle', sil: 'explorer', rank: 'C', slots: 22 },
+    ],
+    B: [
+      { id: 's-b1', name: 'Glasswing', cls: 'Explorer', sil: 'explorer', rank: 'S', slots: 44 },
+      { id: 's-b2', name: 'Halcyon Ferry', cls: 'Hauler', sil: 'hauler', rank: 'A', slots: 56 },
+      { id: 's-b3', name: 'Tallow Moth', cls: 'Living Ship', sil: 'living', rank: 'S', slots: 32 },
+      { id: 's-b4', name: 'Brass Heron', cls: 'Fighter', sil: 'fighter', rank: 'B', slots: 34 },
+      { id: 's-b5', name: 'Saltmarsh Kite', cls: 'Solar', sil: 'explorer', rank: 'A', slots: 40 },
+      { id: 's-b6', name: 'Ninth Lantern', cls: 'Sentinel Interceptor', sil: 'fighter', rank: 'S', slots: 36 },
+    ],
+  },
+  tools: {
+    A: [{ id: 't-a1', name: 'Copperline', cls: 'Pistol', rank: 'B', slots: 18 }],
+    B: [
+      { id: 't-b1', name: 'Wren’s Lantern', cls: 'Experimental', rank: 'S', slots: 24 },
+      { id: 't-b2', name: 'Grey Tithe', cls: 'Rifle', rank: 'A', slots: 22 },
+      { id: 't-b3', name: 'Undersong', cls: 'Staff', rank: 'S', slots: 20 },
+    ],
+  },
+  pets: {
+    A: petA.map((n, i) => ({ id: 'p-a' + i, name: n, cls: species[i % species.length] })),
+    B: [
+      { id: 'p-b1', name: 'Pim', cls: 'Glimmerback' },
+      { id: 'p-b2', name: 'Oriel', cls: 'Mossjaw' },
+      { id: 'p-b3', name: 'Tamsin', cls: 'Skitterfin' },
+      { id: 'p-b4', name: 'Bramble', cls: 'Hornet Hound' },
+    ],
+  },
+};
+const CURRENCY = [
+  { id: 'units', label: 'Units', a: 14208550, b: 3902114 },
+  { id: 'nanites', label: 'Nanites', a: 48210, b: 12905 },
+  { id: 'quicksilver', label: 'Quicksilver', a: 2450, b: 1200 },
+];
+const KNOW = [
+  { id: 'blueprints', label: 'Blueprints', glyph: 'blueprint', a: 412, b: 437, union: 451 },
+  { id: 'gek', label: 'Gek words', glyph: 'words', a: 312, b: 340, union: 351 },
+  { id: 'korvax', label: 'Korvax words', glyph: 'words', a: 188, b: 241, union: 252 },
+  { id: 'vykeen', label: 'Vy’keen words', glyph: 'words', a: 240, b: 198, union: 240 },
+];
+const CHOICES = [
+  { id: 'sum', label: 'Sum' },
+  { id: 'keep', label: 'Keep' },
+  { id: 'take', label: 'Replace' },
+];
+
+/* ---------- state ---------- */
+const S = { cat: 'ships', target: 'A', changes: [], phase: 'edit', lastWrite: null, fx: {} };
+const PRESENT = new Set(); // items already written into A (a copy is never offered twice)
+const H = { past: [], future: [] };
+let seq = 0;
+const nid = () => 'c' + (++seq);
+
+/* ---------- queries (what views read) ---------- */
+const catOf = id => CATS.find(c => c.id === id);
+const allItems = cat => [...(ITEMS[cat]?.A || []), ...(ITEMS[cat]?.B || [])];
+const findItem = (cat, id) => allItems(cat).find(i => i.id === id);
+const stagedCopy = (cat, id) => S.changes.find(c => c.kind === 'copy' && c.cat === cat && c.itemId === id);
+const Q = {
+  saves: SAVES, cats: CATS, cat: catOf, newSlot: NEW_SLOT, choices: CHOICES, fmt, isMac,
+  mod: isMac ? '⌘' : 'Ctrl+', shift: isMac ? '⇧' : 'Shift+',
+  targetName: () => (S.target === 'A' ? SAVES.A.name : `New save · slot ${NEW_SLOT}`),
+  targetShort: () => (S.target === 'A' ? SAVES.A.name : `slot ${NEW_SLOT}`),
+  srcItems: cat => (ITEMS[cat]?.B || []).map(i => {
+    const ch = stagedCopy(cat, i.id);
+    return { ...i, staged: !!ch, present: PRESENT.has(i.id), changeId: ch?.id || null };
+  }),
+  destItems: cat => {
+    const own = (ITEMS[cat]?.A || []).map(i => ({ ...i, staged: false }));
+    const cps = S.changes.filter(c => c.kind === 'copy' && c.cat === cat)
+      .map(c => ({ ...findItem(cat, c.itemId), staged: true, changeId: c.id }));
+    return [...own, ...cps];
+  },
+  cap: cat => {
+    const c = catOf(cat); if (!c?.cap) return null;
+    const own = (ITEMS[cat]?.A || []).length;
+    const staged = S.changes.filter(x => x.kind === 'copy' && x.cat === cat).length;
+    return { own, staged, used: own + staged, cap: c.cap, free: c.cap - own - staged };
+  },
+  currency: () => CURRENCY.map(c => {
+    const ch = S.changes.find(x => x.kind === 'currency' && x.cid === c.id);
+    return { ...c, staged: ch || null, result: ch ? currencyResult(c, ch.choice) : c.a };
+  }),
+  knowledge: () => KNOW.map(k => {
+    const ch = S.changes.find(x => x.kind === 'learn' && x.kid === k.id);
+    return { ...k, gain: k.union - k.a, staged: ch || null, result: ch ? k.union : k.a };
+  }),
+  changes: () => S.changes.map(describe),
+  count: () => S.changes.length,
+  canUndo: () => H.past.length > 0,
+  canRedo: () => H.future.length > 0,
+};
+function currencyResult(c, choice) { return choice === 'sum' ? c.a + c.b : choice === 'take' ? c.b : c.a; }
+function describe(ch) {
+  if (ch.kind === 'copy') {
+    const it = findItem(ch.cat, ch.itemId); const cat = catOf(ch.cat);
+    const pos = Q.destItems(ch.cat).findIndex(d => d.id === ch.itemId) + 1;
+    return { id: ch.id, kind: ch.kind, cat: ch.cat, glyph: cat.glyph, verb: 'Copy', subject: it.name,
+      note: it.rank ? `${it.cls} · ${it.rank}-class` : it.cls,
+      detail: `into ${cat.place} ${String(pos).padStart(2, '0')}`, pos, item: it };
+  }
+  if (ch.kind === 'currency') {
+    const c = CURRENCY.find(x => x.id === ch.cid); const r = currencyResult(c, ch.choice);
+    const detail = ch.choice === 'sum' ? `${fmt(c.a)} + ${fmt(c.b)} = ${fmt(r)}`
+      : ch.choice === 'take' ? `${fmt(c.a)} → ${fmt(r)}` : `stays ${fmt(c.a)}`;
+    return { id: ch.id, kind: ch.kind, glyph: 'currency', verb: ch.choice === 'sum' ? 'Add' : ch.choice === 'take' ? 'Replace' : 'Keep',
+      subject: c.label, detail, choice: ch.choice, conflict: true, from: c.a, to: r, noop: ch.choice === 'keep' };
+  }
+  const k = KNOW.find(x => x.id === ch.kid);
+  return { id: ch.id, kind: ch.kind, glyph: k.glyph, verb: 'Learn', subject: `${k.union - k.a} ${k.label.toLowerCase()}`,
+    detail: `${fmt(k.a)} → ${fmt(k.union)}`, from: k.a, to: k.union };
+}
+
+/* ---------- history ---------- */
+function apply(e, inverse) {
+  const t = inverse ? { add: 'remove', remove: 'add', choice: 'choice' }[e.type] : e.type;
+  if (t === 'add') e.changes.forEach((c, i) => S.changes.splice(Math.min(e.index + i, S.changes.length), 0, c));
+  else if (t === 'remove') e.changes.forEach(c => { const i = S.changes.indexOf(c); if (i > -1) S.changes.splice(i, 1); });
+  else { const c = S.changes.find(x => x.id === e.id); if (c) c.choice = inverse ? e.from : e.to; }
+}
+function act(e) { apply(e); H.past.push(e); H.future.length = 0; }
+
+/* ---------- live region ---------- */
+let liveEl;
+function say(msg) { if (!liveEl) return; liveEl.textContent = ''; setTimeout(() => { liveEl.textContent = msg; }, 30); }
+const tally = () => `${S.changes.length} change${S.changes.length === 1 ? '' : 's'} staged, nothing written yet.`;
+
+/* ---------- render + focus preservation + number ticks ---------- */
+const prevNums = new Map();
+function render() {
+  const a = document.activeElement;
+  const fk = a && a.dataset ? a.dataset.focusKey : null;
+  window.View.render(Q, S);
+  $$('[data-num]').forEach(el => {
+    const k = el.dataset.num, v = parseFloat(String(el.textContent).replace(/[^\d.-]/g, ''));
+    const p = prevNums.get(k);
+    if (p !== undefined && p !== v && !reduced()) {
+      el.classList.remove('num-up', 'num-down'); void el.offsetWidth;
+      el.classList.add(v > p ? 'num-up' : 'num-down');
+    }
+    prevNums.set(k, v);
+  });
+  if (S.fx.arrive) $$(`[data-dest-item="${S.fx.arrive}"]`).forEach(el => {
+    el.classList.add(S.fx.landing ? 'is-landing' : 'is-arriving');
+    if (!S.fx.landing) setTimeout(() => el.classList.remove('is-arriving'), 1400);
+  });
+  if (S.fx.newChange) $$(`[data-change="${S.fx.newChange}"]`).forEach(el => {
+    el.classList.add('is-new'); setTimeout(() => el.classList.remove('is-new'), 1600);
+  });
+  if (fk) {
+    const t = $(`[data-focus-key="${CSS.escape(fk)}"]`) || (fk.startsWith('revert:') && ($('[data-focus-key^="revert:"]') || $('[data-focus-key="changes"]')));
+    if (t && t !== document.activeElement) t.focus({ preventScroll: true });
+  }
+  S.fx = {};
+}
+
+/* ---------- actions ---------- */
+function copy(cat, itemId, fx = {}) {
+  const cap = Q.cap(cat); if (!cap || cap.free <= 0 || stagedCopy(cat, itemId) || PRESENT.has(itemId)) return null;
+  const ch = { id: nid(), kind: 'copy', cat, itemId };
+  act({ type: 'add', changes: [ch], index: S.changes.length });
+  S.fx = { arrive: itemId, newChange: ch.id, ...fx };
+  if (S.phase === 'written') S.phase = 'edit';
+  render();
+  const it = findItem(cat, itemId); const c = Q.cap(cat);
+  say(`${it.name} staged into ${Q.targetName()}, ${catOf(cat).place} ${c.used} of ${c.cap}. ${tally()}`);
+  return ch;
+}
+function stageCurrency(cid) {
+  if (S.changes.find(x => x.kind === 'currency' && x.cid === cid)) return;
+  const ch = { id: nid(), kind: 'currency', cid, choice: 'sum' };
+  act({ type: 'add', changes: [ch], index: S.changes.length });
+  S.fx = { newChange: ch.id }; S.phase = 'edit'; render();
+  say(`${CURRENCY.find(c => c.id === cid).label} staged as a sum. ${tally()}`);
+}
+function learn(kid) {
+  const k = KNOW.find(x => x.id === kid);
+  if (!k || k.union === k.a || S.changes.find(x => x.kind === 'learn' && x.kid === kid)) return;
+  const ch = { id: nid(), kind: 'learn', kid };
+  act({ type: 'add', changes: [ch], index: S.changes.length });
+  S.fx = { newChange: ch.id }; S.phase = 'edit'; render();
+  say(`Learn ${k.union - k.a} ${k.label.toLowerCase()} staged. ${tally()}`);
+}
+function setChoice(id, to) {
+  const c = S.changes.find(x => x.id === id); if (!c || c.choice === to) return;
+  act({ type: 'choice', id, from: c.choice, to }); render();
+  const d = describe(c); say(`${d.subject}: ${d.verb.toLowerCase()}, ${d.detail}.`);
+}
+function revert(id) {
+  const c = S.changes.find(x => x.id === id); if (!c) return;
+  const back = c.kind === 'copy' ? flyBackPrep(c) : null;
+  act({ type: 'remove', changes: [c], index: S.changes.indexOf(c) });
+  render(); back && back();
+  say(`Reverted: ${describe(c).verb.toLowerCase()} ${describe(c).subject}. ${tally()}`);
+}
+function undo() {
+  const e = H.past.pop(); if (!e) return say('Nothing to undo.');
+  const backs = e.type === 'add' ? e.changes.filter(c => c.kind === 'copy').map(flyBackPrep).filter(Boolean) : [];
+  apply(e, true); H.future.push(e);
+  if (e.type === 'remove') { S.fx = { newChange: e.changes[0].id, arrive: e.changes[0].itemId }; }
+  render(); backs.forEach(f => f());
+  say(`Undone. ${tally()}`);
+}
+function redo() {
+  const e = H.future.pop(); if (!e) return say('Nothing to redo.');
+  const backs = e.type === 'remove' ? e.changes.filter(c => c.kind === 'copy').map(flyBackPrep).filter(Boolean) : [];
+  apply(e); H.past.push(e);
+  if (e.type === 'add') S.fx = { newChange: e.changes[0].id, arrive: e.changes[0].itemId };
+  render(); backs.forEach(f => f());
+  say(`Redone. ${tally()}`);
+}
+function setCat(id) {
+  if (!catOf(id) || S.cat === id) return; S.cat = id; render(); say(`Showing ${catOf(id).label}.`);
+  try { history.replaceState(null, '', '#' + id); } catch (_) {} // the open tab is part of the URL
+}
+function setTarget(t) { if (S.target === t) return; S.target = t; render(); say(t === 'A' ? `Changes will be written into ${SAVES.A.name}.` : `Changes will be written to a new save in slot ${NEW_SLOT}; ${SAVES.A.name} stays untouched.`); }
+function write() {
+  if (!S.changes.length || S.phase === 'writing') return;
+  const n = S.changes.length, target = Q.targetName();
+  S.phase = 'writing'; render(); say(`Writing ${n} changes to ${target}…`);
+  setTimeout(() => {
+    // bake staged changes into save A (comp only — simulated write)
+    S.changes.forEach(c => {
+      if (c.kind === 'copy') { ITEMS[c.cat].A.push({ ...findItem(c.cat, c.itemId) }); PRESENT.add(c.itemId); }
+      if (c.kind === 'currency') { const k = CURRENCY.find(x => x.id === c.cid); k.a = currencyResult(k, c.choice); }
+      if (c.kind === 'learn') { const k = KNOW.find(x => x.id === c.kid); k.a = k.union; }
+    });
+    const d = new Date();
+    S.lastWrite = { count: n, target, backup: `${SAVES.A.name} — backup ${DT_STAMP.format(d)}`, at: DT_TIME.format(d) };
+    S.changes = []; H.past = []; H.future = [];
+    S.phase = 'written'; render();
+    say(`Written. ${n} changes saved to ${target}. A backup was kept first.`);
+  }, reduced() ? 300 : 1150);
+}
+function resume() { S.phase = 'edit'; S.lastWrite = null; render(); }
+function copyAll() {
+  const cat = S.cat; if (!catOf(cat).cap) return;
+  const todo = Q.srcItems(cat).filter(i => !i.staged).slice(0, Q.cap(cat).free);
+  if (!todo.length) return say('Nothing left to copy.');
+  const chs = todo.map(i => ({ id: nid(), kind: 'copy', cat, itemId: i.id }));
+  act({ type: 'add', changes: chs, index: S.changes.length });
+  S.phase = 'edit'; S.fx = { newChange: chs[0].id }; render();
+  chs.forEach((c, i) => setTimeout(() => { $$(`[data-dest-item="${c.itemId}"]`).forEach(el => { el.classList.add('is-arriving'); setTimeout(() => el.classList.remove('is-arriving'), 1400); }); }, reduced() ? 0 : i * 70));
+  say(`${chs.length} ${catOf(cat).label.toLowerCase()} staged. ${tally()}`);
+}
+
+/* ---------- springs (damping ratio + response, Apple-style) ---------- */
+class Spring {
+  constructor(v, eps = 0.25) { this.v = v; this.vel = 0; this.t = v; this.k = 0; this.c = 0; this.on = false; this.eps = eps; }
+  to(t, { damping = 1, response = 0.35, velocity } = {}) {
+    const w = (2 * Math.PI) / response; this.k = w * w; this.c = 2 * damping * w; this.t = t;
+    if (velocity !== undefined) this.vel = velocity; this.on = true;
+  }
+  set(v) { this.v = this.t = v; this.vel = 0; this.on = false; }
+  step(h) {
+    if (!this.on) return false;
+    this.vel += (-this.k * (this.v - this.t) - this.c * this.vel) * h; this.v += this.vel * h;
+    if (Math.abs(this.v - this.t) < this.eps && Math.abs(this.vel) < this.eps * 20) { this.v = this.t; this.vel = 0; this.on = false; }
+    return this.on;
+  }
+}
+
+/* ---------- ghost flight engine ---------- */
+const G = { el: null, x: new Spring(0), y: new Spring(0), s: new Spring(1, 0.002), r: new Spring(0, 0.05), o: new Spring(1, 0.01), raf: 0, last: 0, onArrive: null, onRest: null, arrived: false, tracking: false };
+function ghostApply() {
+  if (!G.el) return;
+  G.el.style.transform = `translate3d(${G.x.v}px,${G.y.v}px,0) rotate(${G.r.v}deg) scale(${G.s.v})`;
+  G.el.style.opacity = G.o.v;
+}
+function ghostLoop(t) {
+  const dt = Math.min(0.05, (t - (G.last || t)) / 1000 || 0.016); G.last = t;
+  let on = false; const n = Math.max(1, Math.round(dt / (1 / 240))); const h = dt / n;
+  for (let i = 0; i < n; i++) for (const k of ['x', 'y', 's', 'r', 'o']) on = G[k].step(h) || on;
+  ghostApply();
+  if (G.onArrive && !G.arrived && Math.hypot(G.x.v - G.x.t, G.y.v - G.y.t) < 3) { G.arrived = true; const f = G.onArrive; G.onArrive = null; f(); }
+  if (on || G.tracking) G.raf = requestAnimationFrame(ghostLoop);
+  else { G.raf = 0; G.last = 0; const f = G.onRest; G.onRest = null; f && f(); }
+}
+function kick() { if (!G.raf) { G.last = 0; G.raf = requestAnimationFrame(ghostLoop); } }
+function makeGhost(node, w, h, origin) {
+  if (G.el) G.el.remove();
+  node.classList.add('ms-ghost'); node.setAttribute('aria-hidden', 'true'); node.inert = true;
+  node.style.width = w + 'px'; node.style.height = h + 'px';
+  node.style.transformOrigin = origin || '50% 50%';
+  document.body.appendChild(node); G.el = node; G.arrived = false; G.onArrive = null; G.onRest = null;
+  ['x', 'y', 's', 'r', 'o'].forEach(k => G[k].on = false);
+  return node;
+}
+function dropGhost() { if (G.el) G.el.remove(); G.el = null; G.tracking = false; }
+
+/* fly an element-shaped ghost from rect A into the next free slot, then commit */
+function flyCopy(srcEl) {
+  const cat = srcEl.dataset.cat, id = srcEl.dataset.srcItem;
+  if (srcEl.getAttribute('aria-disabled') === 'true') return refuse(srcEl);
+  const slot = $('[data-next-slot]');
+  if (!slot) return refuse(srcEl);
+  if (reduced()) return copy(cat, id);
+  slot.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  const sr = slot.getBoundingClientRect(), er = srcEl.getBoundingClientRect();
+  const g = makeGhost(window.View.ghost(findItem(cat, id), cat), sr.width, sr.height, '0 0');
+  const s0 = clamp(Math.min(er.width / sr.width, er.height / sr.height), 0.3, 1);
+  G.x.set(er.left + (er.width - sr.width * s0) / 2); G.y.set(er.top + (er.height - sr.height * s0) / 2);
+  G.s.set(s0); G.r.set(0); G.o.set(1); ghostApply();
+  window.View.onDragStart?.({ el: srcEl, ghost: g, origin: er, keyboard: true });
+  G.x.to(sr.left, { damping: 0.82, response: 0.46 }); G.y.to(sr.top, { damping: 0.82, response: 0.46 });
+  G.s.to(1, { damping: 0.9, response: 0.4 });
+  land(cat, id, srcEl); kick();
+}
+function land(cat, id, srcEl) {
+  G.onArrive = () => { copy(cat, id, { landing: true }); window.View.onDragEnd?.({ el: srcEl, dropped: true }); };
+  G.onRest = () => {
+    $$(`[data-dest-item="${id}"]`).forEach(el => { el.classList.remove('is-landing'); el.classList.add('is-arriving'); setTimeout(() => el.classList.remove('is-arriving'), 1400); });
+    dropGhost(); srcEl.classList?.remove('is-drag-source', 'is-pressed');
+  };
+}
+function refuse(el) {
+  el.classList.remove('is-refused'); void el.offsetWidth; el.classList.add('is-refused');
+  setTimeout(() => el.classList.remove('is-refused'), 500);
+  const cat = catOf(el.dataset.cat); const it = findItem(el.dataset.cat, el.dataset.srcItem);
+  say(stagedCopy(el.dataset.cat, el.dataset.srcItem) ? `${it.name} is already staged.` : `${Q.targetName()} has no free ${cat.place}s.`);
+}
+/* undo/revert: fly the destination card back to where it came from (spatial consistency) */
+function flyBackPrep(ch) {
+  if (reduced()) return null;
+  const d = $(`[data-dest-item="${ch.itemId}"]`); if (!d) return null;
+  const dr = d.getBoundingClientRect();
+  const node = d.cloneNode(true); node.removeAttribute('data-dest-item'); node.removeAttribute('id');
+  $$('[id],[data-focus-key],[data-dest-item]', node).forEach(n => { n.removeAttribute('id'); n.removeAttribute('data-focus-key'); n.removeAttribute('data-dest-item'); });
+  return () => {
+    const s = $(`[data-src-item="${ch.itemId}"]`);
+    const g = makeGhost(node, dr.width, dr.height, '0 0');
+    G.x.set(dr.left); G.y.set(dr.top); G.s.set(1); G.r.set(0); G.o.set(1); ghostApply();
+    if (s) {
+      const sr = s.getBoundingClientRect(); const sc = clamp(Math.min(sr.width / dr.width, sr.height / dr.height), 0.3, 1);
+      G.x.to(sr.left + (sr.width - dr.width * sc) / 2, { damping: 1, response: 0.34 }); G.y.to(sr.top + (sr.height - dr.height * sc) / 2, { damping: 1, response: 0.34 });
+      G.s.to(sc, { damping: 1, response: 0.34 }); G.o.to(0, { damping: 1, response: 0.5 });
+      s.classList.add('is-returning'); setTimeout(() => s.classList.remove('is-returning'), 700);
+    } else { G.s.to(0.9, { damping: 1, response: 0.25 }); G.o.to(0, { damping: 1, response: 0.25 }); }
+    G.onRest = dropGhost; kick();
+  };
+}
+
+/* ---------- pointer drag ---------- */
+let D = null, suppressClick = false;
+function velocity(h = D.hist) {
+  const now = h[h.length - 1];
+  let i = h.length - 1; while (i > 0 && now.t - h[i - 1].t < 90) i--;
+  const p = h[Math.max(0, i - 1)]; const dt = (now.t - p.t) / 1000;
+  return dt > 0.001 ? { x: (now.x - p.x) / dt, y: (now.y - p.y) / dt } : { x: 0, y: 0 };
+}
+document.addEventListener('pointerdown', e => {
+  const el = e.target.closest('[data-src-item]');
+  if (!el || e.button !== 0 || G.el) return;
+  D = { el, id: el.dataset.srcItem, cat: el.dataset.cat, sx: e.clientX, sy: e.clientY, started: false, hist: [{ x: e.clientX, y: e.clientY, t: e.timeStamp }] };
+  el.classList.add('is-pressed');
+  try { el.setPointerCapture(e.pointerId); } catch (_) {}
+});
+document.addEventListener('pointermove', e => {
+  if (!D) return;
+  D.hist.push({ x: e.clientX, y: e.clientY, t: e.timeStamp }); if (D.hist.length > 12) D.hist.shift();
+  if (!D.started) {
+    if (Math.hypot(e.clientX - D.sx, e.clientY - D.sy) < 5) return;
+    if (!startDrag()) return;
+  }
+  moveDrag(e.clientX, e.clientY);
+});
+function startDrag() {
+  const el = D.el;
+  if (el.getAttribute('aria-disabled') === 'true') { refuse(el); el.classList.remove('is-pressed'); D = null; suppressClick = true; return false; }
+  const slot = $('[data-next-slot]');
+  if (!slot) { refuse(el); el.classList.remove('is-pressed'); D = null; suppressClick = true; return false; }
+  slot.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  const sr = slot.getBoundingClientRect(), er = el.getBoundingClientRect();
+  D.started = true; suppressClick = true;
+  D.w = sr.width; D.h = sr.height;
+  D.ax = clamp((D.sx - er.left) / er.width, 0, 1); D.ay = clamp((D.sy - er.top) / er.height, 0, 1);
+  D.s0 = clamp(Math.min(er.width / sr.width, er.height / sr.height), 0.3, 1);
+  D.origin = er; D.zone = $('[data-dropzone]');
+  const g = makeGhost(window.View.ghost(findItem(D.cat, D.id), D.cat), D.w, D.h, `${D.ax * 100}% ${D.ay * 100}%`);
+  G.tracking = true;
+  G.x.set(D.sx - D.ax * D.w); G.y.set(D.sy - D.ay * D.h);
+  if (reduced()) { G.s.set(1); } else { G.s.set(D.s0); G.s.to(1.03, { damping: 0.86, response: 0.28 }); }
+  G.r.set(0); G.o.set(1); ghostApply();
+  el.classList.add('is-drag-source'); document.body.classList.add('ms-dragging');
+  window.View.onDragStart?.({ el, ghost: g, origin: er });
+  kick();
+  return true;
+}
+function moveDrag(px, py) {
+  G.x.set(px - D.ax * D.w); G.y.set(py - D.ay * D.h);
+  const v = velocity();
+  if (!reduced()) G.r.to(clamp(v.x / 90, -6, 6), { damping: 1, response: 0.22 });
+  const zr = D.zone?.getBoundingClientRect();
+  const over = !!zr && px >= zr.left && px <= zr.right && py >= zr.top && py <= zr.bottom;
+  if (over !== D.over) {
+    D.over = over; D.zone?.classList.toggle('is-drop-ready', over);
+    $('[data-next-slot]')?.classList.toggle('is-targeted', over);
+    if (!reduced()) G.s.to(over ? 1 : 1.03, { damping: 0.8, response: 0.25 });
+  }
+  window.View.onDragMove?.({ x: px, y: py, over, origin: D.origin, ghost: G.el });
+}
+function endDrag(e, cancelled) {
+  if (!D) return;
+  const d = D; D = null;
+  d.el.classList.remove('is-pressed');
+  if (!d.started) return;
+  document.body.classList.remove('ms-dragging');
+  d.zone?.classList.remove('is-drop-ready');
+  const slot = $('[data-next-slot]'); slot?.classList.remove('is-targeted');
+  G.tracking = false;
+  setTimeout(() => { suppressClick = false; }, 0);
+  const v = velocity(d.hist);
+  if (!cancelled && d.over && slot) {
+    const sr = slot.getBoundingClientRect();
+    if (reduced()) { dropGhost(); d.el.classList.remove('is-drag-source'); copy(d.cat, d.id); window.View.onDragEnd?.({ el: d.el, dropped: true }); return; }
+    G.el.style.transformOrigin = '0 0';
+    // re-base position for origin 0 0 so the handoff has no jump
+    const bx = G.x.v + d.ax * d.w * (1 - G.s.v), by = G.y.v + d.ay * d.h * (1 - G.s.v);
+    G.x.set(bx); G.y.set(by);
+    G.x.to(sr.left, { damping: 0.72, response: 0.42, velocity: v.x });
+    G.y.to(sr.top, { damping: 0.72, response: 0.42, velocity: v.y });
+    G.s.to(1, { damping: 0.8, response: 0.3 }); G.r.to(0, { damping: 0.62, response: 0.38 });
+    land(d.cat, d.id, d.el); kick();
+  } else {
+    // spring home along the same path it left by
+    const er = d.el.getBoundingClientRect();
+    G.el.style.transformOrigin = '0 0';
+    const bx = G.x.v + d.ax * d.w * (1 - G.s.v), by = G.y.v + d.ay * d.h * (1 - G.s.v);
+    G.x.set(bx); G.y.set(by);
+    const tx = er.left + (er.width - d.w * d.s0) / 2, ty = er.top + (er.height - d.h * d.s0) / 2;
+    if (reduced()) { dropGhost(); d.el.classList.remove('is-drag-source'); window.View.onDragEnd?.({ el: d.el, dropped: false }); return; }
+    G.x.to(tx, { damping: 1, response: 0.32, velocity: v.x }); G.y.to(ty, { damping: 1, response: 0.32, velocity: v.y });
+    G.s.to(d.s0, { damping: 1, response: 0.3 }); G.r.to(0, { damping: 1, response: 0.3 });
+    G.onRest = () => { dropGhost(); d.el.classList.remove('is-drag-source'); };
+    window.View.onDragEnd?.({ el: d.el, dropped: false });
+    kick();
+    say('Drag cancelled. Nothing changed.');
+  }
+}
+document.addEventListener('pointerup', e => endDrag(e, false));
+document.addEventListener('pointercancel', e => endDrag(e, true));
+
+/* ---------- clicks, choices, keyboard ---------- */
+document.addEventListener('click', e => {
+  const src = e.target.closest('[data-src-item]');
+  if (src) { if (suppressClick) { suppressClick = false; return; } return flyCopy(src); }
+  const a = e.target.closest('[data-action]'); if (!a) return;
+  const k = a.dataset.action;
+  if (k === 'revert') revert(a.dataset.id);
+  else if (k === 'undo') undo();
+  else if (k === 'redo') redo();
+  else if (k === 'write') write();
+  else if (k === 'resume') resume();
+  else if (k === 'cat') setCat(a.dataset.cat);
+  else if (k === 'target') setTarget(a.dataset.target);
+  else if (k === 'stage-currency') stageCurrency(a.dataset.cid);
+  else if (k === 'learn') learn(a.dataset.kid);
+  else if (k === 'palette') openPalette();
+  else if (k === 'copy-all') copyAll();
+});
+document.addEventListener('change', e => {
+  const r = e.target.closest('input[data-choice]'); if (r && r.checked) setChoice(r.dataset.choice, r.value);
+});
+const typing = t => t && (t.tagName === 'INPUT' && !['radio', 'checkbox', 'button'].includes(t.type) || t.tagName === 'TEXTAREA' || t.isContentEditable);
+document.addEventListener('keydown', e => {
+  const mod = isMac ? e.metaKey : e.ctrlKey; const key = e.key.toLowerCase();
+  if (mod && key === 'k') { e.preventDefault(); return PAL.open ? closePalette() : openPalette(); }
+  if (e.key === 'Escape') { if (PAL.open) return closePalette(); if (D && D.started) return endDrag(e, true); }
+  if (PAL.open) return;
+  if (mod && key === 'z' && !typing(e.target)) { e.preventDefault(); return e.shiftKey ? redo() : undo(); }
+  if (!isMac && e.ctrlKey && key === 'y') { e.preventDefault(); return redo(); }
+  if (mod && key === 's') { e.preventDefault(); return write(); }
+  if (!mod && !e.altKey && !typing(e.target) && /^[1-5]$/.test(e.key)) { const c = CATS.find(x => x.key === e.key); c && setCat(c.id); }
+});
+
+/* ---------- command palette (non-modal popover; Esc closes) ---------- */
+const PAL = { open: false, el: null, input: null, list: null, items: [], sel: 0, ret: null };
+function commands() {
+  const n = S.changes.length, c = catOf(S.cat);
+  const cmds = [
+    { id: 'write', label: n ? `Write ${n} change${n === 1 ? '' : 's'} to ${Q.targetShort()}` : 'Write changes', hint: `${Q.mod}S`, run: write, on: n > 0 },
+    { id: 'undo', label: 'Undo last change', hint: `${Q.mod}Z`, run: undo, on: Q.canUndo() },
+    { id: 'redo', label: 'Redo', hint: `${Q.shift}${Q.mod}Z`, run: redo, on: Q.canRedo() },
+  ];
+  if (c.cap) cmds.push({ id: 'all', label: `Copy every ${c.one} from ${SAVES.B.name}`, hint: '', run: copyAll, on: Q.srcItems(S.cat).some(i => !i.staged) && Q.cap(S.cat).free > 0 });
+  cmds.push({ id: 'target', label: S.target === 'A' ? `Write to a new slot instead (keeps ${SAVES.A.name} as it is)` : `Write into ${SAVES.A.name} instead`, hint: '', run: () => setTarget(S.target === 'A' ? 'new' : 'A'), on: true });
+  CATS.forEach(x => cmds.push({ id: 'cat-' + x.id, label: `Show ${x.label}`, hint: x.key, run: () => setCat(x.id), on: x.id !== S.cat }));
+  return cmds;
+}
+function buildPalette() {
+  const el = document.createElement('div');
+  el.className = 'cmdk'; el.hidden = true;
+  el.innerHTML = `<div class="cmdk-box" role="dialog" aria-label="Command palette">
+    <div class="cmdk-field"><span class="cmdk-k" aria-hidden="true">${Q.mod}K</span>
+    <input class="cmdk-input" type="text" name="command" role="combobox" aria-expanded="true" aria-controls="cmdk-list" aria-autocomplete="list" aria-label="Search commands" placeholder="Type a command…" autocomplete="off" spellcheck="false"></div>
+    <ul class="cmdk-list" id="cmdk-list" role="listbox" aria-label="Commands"></ul>
+    <p class="cmdk-foot"><kbd>↑</kbd><kbd>↓</kbd> move · <kbd>↵</kbd> run · <kbd>esc</kbd> close</p></div>`;
+  document.body.appendChild(el);
+  PAL.el = el; PAL.input = $('.cmdk-input', el); PAL.list = $('.cmdk-list', el);
+  PAL.input.addEventListener('input', () => { PAL.sel = 0; drawPalette(); });
+  PAL.input.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); PAL.sel = Math.min(PAL.items.length - 1, PAL.sel + 1); drawPalette(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); PAL.sel = Math.max(0, PAL.sel - 1); drawPalette(); }
+    else if (e.key === 'Enter') { e.preventDefault(); runCmd(PAL.items[PAL.sel]); }
+  });
+  PAL.list.addEventListener('click', e => { const li = e.target.closest('[data-cmd]'); if (li) runCmd(PAL.items.find(c => c.id === li.dataset.cmd)); });
+  el.addEventListener('pointerdown', e => { if (e.target === el) closePalette(); });
+}
+function drawPalette() {
+  const q = PAL.input.value.trim().toLowerCase();
+  PAL.items = commands().filter(c => c.on && (!q || c.label.toLowerCase().includes(q)));
+  PAL.list.innerHTML = PAL.items.length ? PAL.items.map((c, i) =>
+    `<li id="cmd-${c.id}" role="option" data-cmd="${c.id}" aria-selected="${i === PAL.sel}" class="cmdk-item${i === PAL.sel ? ' is-sel' : ''}"><span>${c.label}</span>${c.hint ? `<kbd>${c.hint}</kbd>` : ''}</li>`).join('')
+    : `<li class="cmdk-empty" role="option" aria-disabled="true">No matching command</li>`;
+  PAL.input.setAttribute('aria-activedescendant', PAL.items[PAL.sel] ? 'cmd-' + PAL.items[PAL.sel].id : '');
+}
+function openPalette() {
+  if (!PAL.el) buildPalette();
+  PAL.ret = document.activeElement; PAL.open = true; PAL.el.hidden = false; PAL.input.value = ''; PAL.sel = 0; drawPalette();
+  requestAnimationFrame(() => { PAL.el.classList.add('is-open'); PAL.input.focus(); });
+  $$('[data-action="palette"]').forEach(b => b.setAttribute('aria-expanded', 'true'));
+}
+function closePalette() {
+  if (!PAL.open) return; PAL.open = false; PAL.el.classList.remove('is-open'); PAL.el.hidden = true;
+  $$('[data-action="palette"]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+  PAL.ret?.focus?.({ preventScroll: true });
+}
+function runCmd(c) { if (!c) return; closePalette(); c.run(); }
+
+/* ---------- boot ---------- */
+function boot() {
+  const css = document.createElement('style');
+  css.textContent = `.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.ms-ghost{position:fixed!important;left:0;top:0;z-index:1000;pointer-events:none;will-change:transform,opacity;margin:0!important;box-sizing:border-box}
+[data-num]{display:inline-block}
+.num-up{animation:ms-num-up .38s cubic-bezier(.2,.9,.25,1)}.num-down{animation:ms-num-down .38s cubic-bezier(.2,.9,.25,1)}
+@keyframes ms-num-up{from{transform:translateY(.55em);opacity:0}}@keyframes ms-num-down{from{transform:translateY(-.55em);opacity:0}}
+.is-landing{visibility:hidden}
+body.ms-dragging,body.ms-dragging *{cursor:grabbing!important;user-select:none;-webkit-user-select:none}
+@media (prefers-reduced-motion:reduce){.num-up,.num-down{animation:none}}`;
+  document.head.appendChild(css);
+  liveEl = document.createElement('div'); liveEl.className = 'sr-only'; liveEl.setAttribute('aria-live', 'polite'); liveEl.setAttribute('role', 'status');
+  document.body.appendChild(liveEl);
+  const h = decodeURIComponent(location.hash.slice(1)); if (catOf(h)) S.cat = h;
+  // the session so far: two decisions already staged (shows the Changes anatomy)
+  S.changes.push({ id: nid(), kind: 'currency', cid: 'units', choice: 'sum' });
+  S.changes.push({ id: nid(), kind: 'learn', kid: 'blueprints' });
+  H.past.push({ type: 'add', changes: [S.changes[0]], index: 0 }, { type: 'add', changes: [S.changes[1]], index: 1 });
+  render();
+  document.documentElement.classList.add('is-ready');
+}
+window.MS = { Q, S, fmt, reduced, say, actions: { copy, revert, undo, redo, setChoice, write, resume, setCat, setTarget, stageCurrency, learn, copyAll, openPalette, closePalette, flyCopy } };
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+
+/* CORE:END */
+</script>
+</body>
+</html>
