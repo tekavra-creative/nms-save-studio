@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 44">
+  <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path vector-effect="non-scaling-stroke" d="M10,22 L34,10 L96,14 L118,22 L96,30 L34,34 Z"/>
+    <path vector-effect="non-scaling-stroke" d="M60,14 L70,2 M60,30 L70,42"/>
+    <path vector-effect="non-scaling-stroke" d="M46,22 L52,17 L58,22 L52,27 Z" fill="currentColor"/>
+  </g>
+</svg>
