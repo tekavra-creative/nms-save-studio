@@ -17,7 +17,14 @@ electronFuses:
   enableEmbeddedAsarIntegrityValidation: true
   onlyLoadAppFromAsar: true
   grantFileProtocolExtraPrivileges: false
+# Developer ID Application cert minted 2026-09-27 (only the account's Account Holder can create
+# this cert type — see docs/TODO.md). electron-builder auto-discovers it in the keychain below
+# (no explicit mac.identity — that's what forces ad-hoc); notarization runs via the ASC API key
+# already used elsewhere in this repo's tooling (env vars APPLE_API_KEY / APPLE_API_KEY_ID /
+# APPLE_API_ISSUER, set at build time).
+afterSign: build/resign-nested-frameworks.cjs
 mac:
+  icon: build/icon.icns
   target:
     - target: dmg
       arch: [arm64]
@@ -25,9 +32,6 @@ mac:
   hardenedRuntime: true
   entitlements: build/entitlements.mac.plist
   entitlementsInherit: build/entitlements.mac.plist
-  # M1: ad-hoc signature (runs on this Mac; Apple Silicon kills unsigned code).
-  # Developer ID signing + notarization arrive in M5.
-  identity: '-'
 win:
   target:
     - target: nsis
