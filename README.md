@@ -13,17 +13,17 @@ actual ships, and have no way to combine two saves. This does that, natively, wi
 
 ## Download
 
-**[Latest release →](../../releases/latest)** — macOS (Apple Silicon). Windows build not yet
-available.
-
-The app is currently ad-hoc signed, not notarized — macOS will warn on first launch.
-Right-click the app → **Open** → **Open** to bypass Gatekeeper once.
+**[Latest release →](../../releases/latest)** — macOS (Apple Silicon), notarized. Windows build
+not yet available.
 
 ## Features
 
 - **Merge Studio** — drag ships, multi-tools and companions from one save into a copy of another;
   merge currencies (sum, keep, or take-source) and known tech/blueprints/words; undo/redo any
   change before writing.
+- **Inventory editor** — real item names, icons, and search for every container (exosuit,
+  ship/multi-tool, freighter, base storage, and more): change an amount, swap an item, or fill an
+  empty slot.
 - **Raw Explorer** — browse and edit any field in a save, not just the categories above: search
   the whole tree, duplicate or remove array items, edit any value in place.
 - **Survival check** — after loading a merged save in-game, confirm everything actually stuck (the
@@ -34,6 +34,7 @@ Right-click the app → **Open** → **Open** to bypass Gatekeeper once.
   switch anytime, same features underneath.
 
 ![Merge Studio, staging a change](docs/media/screenshot-merge.png)
+![Inventory editor, real item icons from the game](docs/media/screenshot-inventory.png)
 
 ## How it works
 
