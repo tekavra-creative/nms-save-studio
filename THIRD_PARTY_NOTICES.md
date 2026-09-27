@@ -21,6 +21,8 @@ from GPL/AGPL projects is included.
 Bundled as local woff2 files (downloaded by `tools/fetch-fonts.mjs` from Google Fonts), used under the
 SIL Open Font License 1.1 — https://openfontlicense.org:
 - **Newsreader** — Production Type. **Public Sans** — USWDS / General Services Administration.
+- **IM Fell English**, **IM Fell English SC** — Igino Marini (iginomarini.com), digitisation of the
+  Fell Types. **EB Garamond** — Georg Duffner / Octavio Pardo.
 
 ## Data downloaded at runtime
 
