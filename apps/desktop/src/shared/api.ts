@@ -87,6 +87,20 @@ export interface MergeStateView {
   canRedo: boolean;
 }
 
+export interface SurvivalCheckView {
+  group: 'Starships' | 'Multi-tools' | 'Companions' | 'Knowledge';
+  text: string;
+  survived: boolean;
+}
+
+export interface SurvivalReportView {
+  mergedTitle: string;
+  sourceTitle: string;
+  checks: SurvivalCheckView[];
+  survived: number;
+  total: number;
+}
+
 export interface WriteResultView {
   slot: number;
   file: string;
@@ -159,6 +173,7 @@ export interface StudioApi {
   explorerRedo(explorerId: string): Promise<ExplorerStateView>;
   writeExplorer(explorerId: string): Promise<WriteResultView>;
   closeExplorer(explorerId: string): Promise<void>;
+  survivalCheck(root: string, mergedSlot: number, sourceSlot: number): Promise<SurvivalReportView>;
 }
 
 export type EngineRequest =
@@ -185,6 +200,7 @@ export type EngineRequest =
   | { op: 'explorerRedo'; explorerId: string }
   | { op: 'writeExplorer'; explorerId: string }
   | { op: 'closeExplorer'; explorerId: string }
+  | { op: 'survivalCheck'; root: string; mergedSlot: number; sourceSlot: number }
   // internal only (served to the renderer via the nms-icon:// protocol, never callable directly)
   | { op: 'icon'; path: string };
 
@@ -212,6 +228,7 @@ export const ENGINE_OPS: readonly EngineRequest['op'][] = [
   'explorerRedo',
   'writeExplorer',
   'closeExplorer',
+  'survivalCheck',
 ];
 
 export const API_CHANNEL = 'studio:call';

@@ -1,11 +1,11 @@
 // Runs in an Electron utilityProcess: all save parsing/writing happens here, off the UI thread.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { KeyMap, SaveFile, SaveReader, type MappingFile } from '@nss/engine';
+import { checkSurvival, KeyMap, SaveFile, SaveReader, type MappingFile } from '@nss/engine';
 import mappingFallback from '../../../../packages/engine/src/keys/mapping.fallback.json' with { type: 'json' };
 import { findSaveRoots, isGameRunning, listSlots } from '@nss/io';
-import type { EngineRequest, OverviewView, SlotView } from '../shared/api.ts';
-import { applyChanges, closeMerge, openMerge, redo, revertChange, setCurrencyMode, undo, writeMerge } from './merge.ts';
+import type { EngineRequest, OverviewView, SlotView, SurvivalReportView } from '../shared/api.ts';
+import { applyChanges, closeMerge, openMerge, redo, revertChange, setCurrencyMode, shortPlace, undo, writeMerge } from './merge.ts';
 import {
   closeExplorer,
   explorerDuplicateItem,
@@ -49,6 +49,26 @@ function slots(root: string): SlotView[] {
       const latest = s.latest?.manifest;
       return { slot: s.slot, title: latest?.saveName || '', summary: latest?.saveSummary ?? '', restorePoints: points };
     });
+}
+
+function openSlot(root: string, slot: number): SaveFile {
+  const info = listSlots(root)[slot - 1];
+  const e = info?.latest;
+  if (!e) throw new Error(`slot ${slot} is empty`);
+  return new SaveFile(new Uint8Array(readFileSync(join(root, e.ref.dataName))), new Uint8Array(readFileSync(join(root, e.ref.manifestName))), e.ref.manifestSlotIndex);
+}
+
+function titleOf(root: string, slot: number): string {
+  const e = listSlots(root)[slot - 1]?.latest;
+  return e?.manifest?.saveName || shortPlace(e?.manifest?.saveSummary) || `Slot ${slot}`;
+}
+
+/** Compares a save the game has re-saved after loading against the pre-merge save it came from. */
+function survivalCheck(root: string, mergedSlot: number, sourceSlot: number): SurvivalReportView {
+  const merged = openSlot(root, mergedSlot);
+  const source = openSlot(root, sourceSlot);
+  const report = checkSurvival(new SaveReader(merged.doc, KeyMap.forDoc(mapping, merged.doc)), new SaveReader(source.doc, KeyMap.forDoc(mapping, source.doc)));
+  return { mergedTitle: titleOf(root, mergedSlot), sourceTitle: titleOf(root, sourceSlot), ...report };
 }
 
 function overview(root: string, slot: number): OverviewView {
@@ -113,6 +133,8 @@ async function handle(req: EngineRequest): Promise<unknown> {
       return writeExplorer(req.explorerId);
     case 'closeExplorer':
       return closeExplorer(req.explorerId);
+    case 'survivalCheck':
+      return survivalCheck(req.root, req.mergedSlot, req.sourceSlot);
     case 'icon':
       return iconPng(req.path, USER_DATA);
   }

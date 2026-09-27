@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { SaveRootView, SlotView } from '../../../shared/api.ts';
+import type { SaveRootView, SlotView, SurvivalReportView } from '../../../shared/api.ts';
 import type { SkinManifest } from '../skins/types.ts';
 import { CommandPalette, type Command } from '../ui/CommandPalette.tsx';
 
@@ -24,6 +24,9 @@ export function SavesHome({ skin, skins, setSkin, skinCommands, onOpen, onExplor
   const [from, setFrom] = useState<number | null>(null);
   const [running, setRunning] = useState(false);
   const [palette, setPalette] = useState(false);
+  const [survival, setSurvival] = useState<SurvivalReportView | null>(null);
+  const [survivalError, setSurvivalError] = useState<string | null>(null);
+  const [checkingSurvival, setCheckingSurvival] = useState(false);
 
   useEffect(() => {
     window.studio
@@ -62,7 +65,31 @@ export function SavesHome({ skin, skins, setSkin, skinCommands, onOpen, onExplor
 
   const canOpen = root && into !== null && from !== null;
   const open = () => canOpen && onOpen(root.path, into, from);
-  const commands = useMemo<Command[]>(() => [...(canOpen ? [{ id: 'open', label: 'Open Merge Studio', run: open }] : []), ...skinCommands], [canOpen, skinCommands]);
+
+  const runSurvivalCheck = () => {
+    if (!canOpen) return;
+    setCheckingSurvival(true);
+    setSurvivalError(null);
+    window.studio
+      .survivalCheck(root.path, into, from)
+      .then((r) => {
+        setSurvival(r);
+        setCheckingSurvival(false);
+      })
+      .catch((e: Error) => {
+        setSurvivalError(e.message);
+        setCheckingSurvival(false);
+      });
+  };
+
+  const commands = useMemo<Command[]>(
+    () => [
+      ...(canOpen ? [{ id: 'open', label: 'Open Merge Studio', run: open }] : []),
+      ...(canOpen ? [{ id: 'survival', label: 'Check survival (did the game keep everything?)', run: runSurvivalCheck }] : []),
+      ...skinCommands,
+    ],
+    [canOpen, skinCommands],
+  );
 
   const titleOf = (s: SlotView) => s.title || s.summary || `Slot ${s.slot}`;
   const intoSlot = slots.find((s) => s.slot === into);
@@ -149,13 +176,44 @@ export function SavesHome({ skin, skins, setSkin, skinCommands, onOpen, onExplor
             );
           })}
         </ul>
-        <div className="home-foot">
-          <button type="button" className="write" disabled={!canOpen} onClick={open}>
-            <span>
-              Open Merge Studio
-              <small>{canOpen ? `${titleOf(fromSlot!)} → a copy of ${titleOf(intoSlot!)}` : 'pick two saves'}</small>
-            </span>
-          </button>
+        <div className="home-foot-wrap">
+          <div className="home-foot">
+            <button type="button" className="write" disabled={!canOpen} onClick={open}>
+              <span>
+                Open Merge Studio
+                <small>{canOpen ? `${titleOf(fromSlot!)} → a copy of ${titleOf(intoSlot!)}` : 'pick two saves'}</small>
+              </span>
+            </button>
+            <button type="button" className="survival-btn" disabled={!canOpen || checkingSurvival} onClick={runSurvivalCheck} title="After you've loaded the merged save in-game and it auto-saved, check that everything you brought over is still there.">
+              <span>{checkingSurvival ? 'Checking…' : 'Check survival'}</span>
+            </button>
+          </div>
+          {survivalError && (
+            <p className="studio-error" role="alert">
+              {survivalError}
+            </p>
+          )}
+          {survival && (
+            <div className="survival-panel" role="dialog" aria-label="Survival check">
+              <div className="survival-head">
+                <h3>
+                  {survival.survived}/{survival.total} survived — {titleOf(intoSlot!)} vs {titleOf(fromSlot!)}
+                </h3>
+                <button type="button" onClick={() => setSurvival(null)}>
+                  Close
+                </button>
+              </div>
+              <ul>
+                {survival.checks.map((c, i) => (
+                  <li key={i} className={c.survived ? 'ok' : 'lost'}>
+                    <span className="mark">{c.survived ? '✓' : '✗'}</span>
+                    <span className="grp">{c.group}</span>
+                    <span className="txt">{c.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </main>
     </div>

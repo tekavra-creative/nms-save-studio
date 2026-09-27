@@ -57,3 +57,83 @@ body.ms-dragging * {
 .explore-link:hover {
   opacity: 0.9;
 }
+/* .home-stage's grid rows are assigned purely by child ORDER (no skin sets an explicit
+   grid-row), so the number of direct children must stay fixed — wrapping the footer + any
+   conditional panel below it in one element keeps that count stable regardless of what's shown. */
+.home-foot-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+/* Survival check — like Raw Explorer, deliberately skin-neutral (readable in every skin via
+   currentColor) rather than a bespoke treatment per design direction. */
+.survival-btn {
+  font: 500 13px system-ui, sans-serif;
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in oklch, currentColor 22%, transparent);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.survival-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.survival-panel {
+  margin: 0 auto 16px;
+  max-width: 640px;
+  border: 1px solid color-mix(in oklch, currentColor 20%, transparent);
+  border-radius: 10px;
+  padding: 14px 18px;
+  color: inherit;
+}
+.survival-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.survival-head h3 {
+  margin: 0;
+  font: 700 14px system-ui, sans-serif;
+}
+.survival-head button {
+  font: 500 12px system-ui, sans-serif;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in oklch, currentColor 20%, transparent);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.survival-panel ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.survival-panel li {
+  display: flex;
+  gap: 10px;
+  padding: 5px 0;
+  font: 400 13px system-ui, sans-serif;
+  border-bottom: 1px solid color-mix(in oklch, currentColor 8%, transparent);
+}
+.survival-panel li.ok .mark {
+  color: #4caf6a;
+}
+.survival-panel li.lost .mark {
+  color: #e0555a;
+}
+.survival-panel .grp {
+  opacity: 0.6;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  width: 90px;
+}

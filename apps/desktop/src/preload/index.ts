@@ -27,6 +27,7 @@ const api: StudioApi = {
   explorerRedo: (explorerId) => call({ op: 'explorerRedo', explorerId }),
   writeExplorer: (explorerId) => call({ op: 'writeExplorer', explorerId }),
   closeExplorer: (explorerId) => call({ op: 'closeExplorer', explorerId }),
+  survivalCheck: (root, mergedSlot, sourceSlot) => call({ op: 'survivalCheck', root, mergedSlot, sourceSlot }),
 };
 
 contextBridge.exposeInMainWorld('studio', api);
