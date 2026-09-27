@@ -21,6 +21,11 @@ from GPL/AGPL projects is included.
 - **mapping.json** — MBINCompiler release asset, monkeyman192 and contributors, LGPL-3.0.
   https://github.com/monkeyman192/MBINCompiler — downloaded by the app; any bundled fallback copy is
   distributed under LGPL-3.0, with source available from that repository.
+- **MBINCompiler** — monkeyman192 and contributors, LGPL-3.0. https://github.com/monkeyman192/MBINCompiler
+  Used only as an external build-time tool (`packages/data-forge/src/facts/mbincompiler.ts`): its
+  release binary is downloaded on first use, sha256-verified, and run as a separate process to
+  convert the user's own MBIN game files to MXML. It is never linked into or copied inside this
+  repository, and no MBINCompiler code is distributed with the app.
 
 ## Trademarks
 
