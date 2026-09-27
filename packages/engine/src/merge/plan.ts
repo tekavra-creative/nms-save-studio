@@ -26,10 +26,16 @@ export interface MergeOptions {
   knowledge?: boolean;
 }
 
+export type ChangeRef =
+  | { kind: 'asset'; asset: AssetKind; sourceSlot: number; targetSlot: number }
+  | { kind: 'currency'; field: CurrencyField; mode: CurrencyMode; from: string; to: string; capped: boolean }
+  | { kind: 'knowledge'; what: string; count: number };
+
 export interface ChangeLine {
   group: 'Starships' | 'Multi-tools' | 'Companions' | 'Currencies' | 'Knowledge';
   text: string;
   op: Op;
+  ref: ChangeRef;
 }
 
 export interface SkippedLine {
@@ -77,6 +83,22 @@ function assetLabel(kind: AssetKind, source: SaveReader, slot: number): string {
   return c ? c.name || c.species : `Companion ${slot + 1}`;
 }
 
+export const CURRENCY_LABEL: Record<CurrencyField, string> = { Units: 'Units', Nanites: 'Nanites', Specials: 'Quicksilver' };
+
+/** One currency line for a given mode, or undefined when the target value would not change. */
+export function currencyChange(target: SaveReader, source: SaveReader, field: CurrencyField, mode: CurrencyMode): ChangeLine | undefined {
+  const plan = planCurrency(field, target, source, mode);
+  if (plan.result === plan.target) return undefined;
+  const name = CURRENCY_LABEL[field];
+  const text = `${name}: ${plan.target.toLocaleString()} → ${plan.result.toLocaleString()}${plan.capped ? ' (game maximum)' : ''}`;
+  return {
+    group: 'Currencies',
+    text,
+    op: setCurrency(target.playerPath, plan),
+    ref: { kind: 'currency', field, mode, from: plan.target.toString(), to: plan.result.toString(), capped: plan.capped },
+  };
+}
+
 /**
  * Build the list of changes that merge `source` into `target`. Nothing is applied — the caller
  * applies `changes[].op` to an EditSession (each line is its own undo step).
@@ -100,17 +122,19 @@ export function planMerge(target: SaveReader, source: SaveReader, opts: MergeOpt
       continue;
     }
     taken[pick.kind].add(slot);
-    changes.push({ group, text: `Bring ${label}`, op: transferAsset(pick.kind, source, pick.sourceSlot, target, slot, `Bring ${label}`) });
+    changes.push({
+      group,
+      text: `Bring ${label}`,
+      op: transferAsset(pick.kind, source, pick.sourceSlot, target, slot, `Bring ${label}`),
+      ref: { kind: 'asset', asset: pick.kind, sourceSlot: pick.sourceSlot, targetSlot: slot },
+    });
   }
 
   const mode = opts.currencies ?? 'sum';
   if (mode !== 'keep-target') {
     for (const field of ['Units', 'Nanites', 'Specials'] as CurrencyField[]) {
-      const plan = planCurrency(field, target, source, mode);
-      if (plan.result === plan.target) continue;
-      const name = field === 'Specials' ? 'Quicksilver' : field;
-      const text = `${name}: ${plan.target.toLocaleString()} → ${plan.result.toLocaleString()}${plan.capped ? ' (game maximum)' : ''}`;
-      changes.push({ group: 'Currencies', text, op: setCurrency(target.playerPath, plan) });
+      const line = currencyChange(target, source, field, mode);
+      if (line) changes.push(line);
     }
   }
 
@@ -125,12 +149,17 @@ export function planMerge(target: SaveReader, source: SaveReader, opts: MergeOpt
       const items = missingListItems(list, target, source);
       if (!items.length) continue;
       const text = `Learn ${items.length} ${noun}`;
-      changes.push({ group: 'Knowledge', text, op: learnListItems(target.playerPath, list, items, text) });
+      changes.push({
+        group: 'Knowledge',
+        text,
+        op: learnListItems(target.playerPath, list, items, text),
+        ref: { kind: 'knowledge', what: noun, count: items.length },
+      });
     }
     const words = mergeWordGroups(target.playerPath, target, source);
-    if (words) changes.push({ group: 'Knowledge', text: words.label, op: words });
+    if (words) changes.push({ group: 'Knowledge', text: words.label, op: words, ref: { kind: 'knowledge', what: 'words', count: 0 } });
     const glyphs = mergePortalGlyphs(target.playerPath, target, source);
-    if (glyphs) changes.push({ group: 'Knowledge', text: glyphs.label, op: glyphs });
+    if (glyphs) changes.push({ group: 'Knowledge', text: glyphs.label, op: glyphs, ref: { kind: 'knowledge', what: 'portal glyphs', count: 0 } });
   }
 
   return { changes, skipped };

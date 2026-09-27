@@ -5,7 +5,7 @@ import { KeyMap, SaveFile, SaveReader, type MappingFile } from '@nss/engine';
 import mappingFallback from '../../../../packages/engine/src/keys/mapping.fallback.json' with { type: 'json' };
 import { findSaveRoots, isGameRunning, listSlots } from '@nss/io';
 import type { EngineRequest, OverviewView, SlotView } from '../shared/api.ts';
-import { applyChanges, closeMerge, openMerge, redo, undo, writeMerge } from './merge.ts';
+import { applyChanges, closeMerge, openMerge, redo, revertChange, setCurrencyMode, undo, writeMerge } from './merge.ts';
 import { iconPng } from './icons.ts';
 import { toOverviewView } from './views.ts';
 
@@ -64,6 +64,10 @@ async function handle(req: EngineRequest): Promise<unknown> {
       return openMerge(mapping, req.root, req.targetSlot, req.sourceSlot);
     case 'applyChanges':
       return applyChanges(req.mergeId, req.changeIds);
+    case 'revertChange':
+      return revertChange(req.mergeId, req.changeId);
+    case 'setCurrencyMode':
+      return setCurrencyMode(req.mergeId, req.field, req.mode);
     case 'undo':
       return undo(req.mergeId);
     case 'redo':

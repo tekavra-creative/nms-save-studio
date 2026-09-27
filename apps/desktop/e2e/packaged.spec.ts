@@ -1,15 +1,27 @@
-import { _electron as electron, expect, test } from '@playwright/test';
-import { existsSync } from 'node:fs';
+import { expect, test } from '@playwright/test';
+import { spawn } from 'node:child_process';
+import { existsSync, mkdtempSync, statSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const APP = join(import.meta.dirname, '../dist-app/mac-arm64/NMS Save Studio.app/Contents/MacOS/NMS Save Studio');
 
-test.skip(!existsSync(APP), 'packaged app not built');
+test.skip(!existsSync(APP), 'packaged app not built (run dist:mac first)');
 
-test('packaged Mac app launches and lists saves', async () => {
-  const env = Object.fromEntries(Object.entries(process.env).filter(([k, v]) => k !== 'ELECTRON_RUN_AS_NODE' && v !== undefined)) as Record<string, string>;
-  const app = await electron.launch({ executablePath: APP, env });
-  const win = await app.firstWindow();
-  await expect(win.getByRole('region', { name: 'Saves' }).getByRole('button').first()).toBeVisible({ timeout: 20000 });
-  await app.close();
+// The packaged app has debugger-attach fuses disabled, so it proves itself: NSS_SELFTEST_SHOT makes it
+// wait for the saves list, screenshot its own window, and exit 0 (pass) or 1 (fail).
+test('packaged Mac app launches, lists saves, and screenshots itself', async () => {
+  const shot = join(mkdtempSync(join(tmpdir(), 'nss-packaged-')), 'packaged.png');
+  const env = { ...process.env, NSS_SELFTEST_SHOT: shot };
+  delete env.ELECTRON_RUN_AS_NODE;
+  const { code, out } = await new Promise<{ code: number | null; out: string }>((resolve) => {
+    const child = spawn(APP, [], { env });
+    let out = '';
+    child.stdout.on('data', (d) => (out += d));
+    child.stderr.on('data', (d) => (out += d));
+    child.on('exit', (code) => resolve({ code, out }));
+  });
+  expect(out).toContain('selftest PASS');
+  expect(code).toBe(0);
+  expect(statSync(shot).size).toBeGreaterThan(10_000);
 });

@@ -47,20 +47,37 @@ export interface OverviewView {
   capacity: { ships: number; multitools: number; companions: number };
 }
 
+export type AssetKind = 'ship' | 'multitool' | 'companion';
+export type CurrencyField = 'Units' | 'Nanites' | 'Specials';
+export type CurrencyMode = 'sum' | 'keep-target' | 'take-source' | 'max';
+
+export type ChangeRefView =
+  | { kind: 'asset'; asset: AssetKind; sourceSlot: number; targetSlot: number }
+  | { kind: 'currency'; field: CurrencyField; mode: CurrencyMode; from: string; to: string; source: string; capped: boolean }
+  | { kind: 'knowledge'; what: string; count: number };
+
 export interface ChangeView {
   id: number;
   group: 'Starships' | 'Multi-tools' | 'Companions' | 'Currencies' | 'Knowledge';
   text: string;
   applied: boolean;
+  ref: ChangeRefView;
 }
 
 export interface MergeStateView {
   mergeId: string;
   targetSlot: number;
   sourceSlot: number;
+  targetTitle: string;
+  sourceTitle: string;
+  /** Target as it will be written (with applied changes). */
   target: OverviewView;
+  /** Target as it is on disk now. */
+  targetBefore: OverviewView;
   source: OverviewView;
   changes: ChangeView[];
+  /** Change ids in the order they were applied. */
+  appliedOrder: number[];
   skipped: { group: ChangeView['group']; text: string; reason: string }[];
   canUndo: boolean;
   canRedo: boolean;
@@ -81,6 +98,8 @@ export interface StudioApi {
   gameRunning(): Promise<boolean>;
   openMerge(root: string, targetSlot: number, sourceSlot: number): Promise<MergeStateView>;
   applyChanges(mergeId: string, changeIds: number[]): Promise<MergeStateView>;
+  revertChange(mergeId: string, changeId: number): Promise<MergeStateView>;
+  setCurrencyMode(mergeId: string, field: CurrencyField, mode: CurrencyMode): Promise<MergeStateView>;
   undo(mergeId: string): Promise<MergeStateView>;
   redo(mergeId: string): Promise<MergeStateView>;
   writeMerge(mergeId: string, name: string): Promise<WriteResultView>;
@@ -94,6 +113,8 @@ export type EngineRequest =
   | { op: 'gameRunning' }
   | { op: 'openMerge'; root: string; targetSlot: number; sourceSlot: number }
   | { op: 'applyChanges'; mergeId: string; changeIds: number[] }
+  | { op: 'revertChange'; mergeId: string; changeId: number }
+  | { op: 'setCurrencyMode'; mergeId: string; field: CurrencyField; mode: CurrencyMode }
   | { op: 'undo'; mergeId: string }
   | { op: 'redo'; mergeId: string }
   | { op: 'writeMerge'; mergeId: string; name: string }
@@ -108,6 +129,8 @@ export const ENGINE_OPS: readonly EngineRequest['op'][] = [
   'gameRunning',
   'openMerge',
   'applyChanges',
+  'revertChange',
+  'setCurrencyMode',
   'undo',
   'redo',
   'writeMerge',
