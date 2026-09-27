@@ -23,6 +23,8 @@ SIL Open Font License 1.1 — https://openfontlicense.org:
 - **Newsreader** — Production Type. **Public Sans** — USWDS / General Services Administration.
 - **B612** and **B612 Mono** — Airbus, designed for cockpit screens. Used by the Drydock skin
   (`apps/desktop/src/renderer/src/skins/drydock/fonts/`).
+- **IM Fell English**, **IM Fell English SC** — Igino Marini (iginomarini.com), digitisation of the
+  Fell Types. **EB Garamond** — Georg Duffner / Octavio Pardo.
 
 ## Data downloaded at runtime
 
