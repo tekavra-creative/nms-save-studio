@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-09-27 — Raw Explorer (full editing, generic)
+
+### Added
+- Raw Explorer: a screen that browses and edits any field of any save, not a fixed list of
+  categories. Reachable per save from the home screen ("Browse every field"). Writes go back into
+  the same slot, guarded by the same fingerprint + snapshot + rollback path the safe write already had.
+- Engine: `packages/engine/src/explorer.ts` — `listChildren`/`getLeaf`/`setLeaf`, path-based and
+  schema-agnostic; unknown fields show their raw key, known fields show the mapped name.
+
+### Fixed
+- Layout bug found via e2e: the crumbs bar, field list and footer overlapped in the same CSS grid
+  row, because the app shell's outer grid only defines 2 explicit rows — fixed by giving Raw
+  Explorer one wrapper below the header instead of several siblings.
+
 ## 2026-09-27 — M1 Merge Studio
 
 ### Added

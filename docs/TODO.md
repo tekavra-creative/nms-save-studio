@@ -21,10 +21,14 @@
 - [x] Saves home + Merge Studio + Changes ledger (per-line revert, currency sum/keep/replace, undo/redo) + Write to a new slot
 - [x] Skin system; Parhelion skin (default, fonts bundled)
 - [x] "Ralfar + Anomaly" written to slot 5 via CLI — **waiting on Vikelas's in-game check**, then `nmsx survival --target 5 --source 3`
-- [ ] Drydock + Portolan skins (in progress)
-- [ ] Full e2e suite across all skins
-- [ ] Write-into-original-save option (currently always a new slot)
+- [x] Drydock + Portolan skins
+- [x] Full e2e suite across all skins (6/6)
 - [ ] Survival check in the app UI
+
+## M2 Full editing (in progress — this is the "extensive save editing" ask)
+- [x] Raw Explorer: generic browse + edit of any field in any save (`packages/engine/src/explorer.ts` + app screen, in-place write with the existing safe-write guard). This is the write-into-original-save path — no longer merge-only.
+- [ ] Domain screens on top of the same engine (inventories, freighter/frigates/squadron, exocraft, bases/settlements, discoveries, milestones/reputation) — Raw Explorer covers these today, generically but plainly; these give each a purpose-built, friendlier UI
+- [ ] Bulk actions (max-out a stack, unlock all tech, etc.) with preview before write
 
 ## Discovered
 - [ ] Survival check: re-read after a play session and report which edits stuck
