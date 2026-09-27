@@ -11,8 +11,8 @@
 - [x] nmsx CLI (list / copy-slot / diff)
 - [x] Byte-identical round trip on all 5 real saves
 - [ ] In-game: "Studio Test" (slot 4) shows its name and loads — **waiting on Vikelas**
-- [ ] Data-forge spike: HGPAK reader + one icon rendered (agent running)
-- [ ] 3 Merge Studio hero comps + name candidates; Vikelas picks one (agent running)
+- [x] Data-forge spike: HGPAK reader + icons render from the local install
+- [x] 3 hero comps; Vikelas chose all three as switchable skins, Parhelion default
 
 ## M1 Merge Day
 - [x] Asset readers + transfer ops (ships incl. linked colour/customisation, multitools, companions); corvettes blocked with reason
