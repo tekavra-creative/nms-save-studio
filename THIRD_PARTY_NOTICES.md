@@ -21,6 +21,8 @@ from GPL/AGPL projects is included.
 Bundled as local woff2 files (downloaded by `tools/fetch-fonts.mjs` from Google Fonts), used under the
 SIL Open Font License 1.1 — https://openfontlicense.org:
 - **Newsreader** — Production Type. **Public Sans** — USWDS / General Services Administration.
+- **B612** and **B612 Mono** — Airbus, designed for cockpit screens. Used by the Drydock skin
+  (`apps/desktop/src/renderer/src/skins/drydock/fonts/`).
 
 ## Data downloaded at runtime
 
