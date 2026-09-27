@@ -8,6 +8,7 @@ export * from './keys/mapping.ts';
 export * from './slots.ts';
 export * from './save.ts';
 export * from './edit.ts';
+export * from './explorer.ts';
 export * from './ops/slot-copy.ts';
 export * from './diff.ts';
 export * from './domains/reader.ts';
