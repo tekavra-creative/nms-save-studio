@@ -13,7 +13,8 @@ from GPL/AGPL projects is included.
   https://github.com/iOrange/bcdec
   - Ported: BC1/BC2/BC3/BC4/BC5/BC7 block decoders and the BC7 partition tables in
     `packages/data-forge/src/dds.ts`.
-- **nms-mission-progress** — okranger1777, MIT License. Story-step data (planned, M2).
+- **nms-mission-progress** — okranger1777, MIT License. Mission-completion `Progress` values for
+  the Artemis and Atlas paths, bundled at `packages/engine/src/domains/story-data/presets.json`.
   https://github.com/okranger1777/nms-mission-progress
 
 ## Fonts (SIL Open Font License 1.1)
