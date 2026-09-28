@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-09-27 — v0.3.0: Story-skip
+
+### Added
+- "Skip the story" on each save card: complete the Artemis + Atlas paths without replaying, using
+  mission-completion data the community already mapped (okranger1777/nms-mission-progress, MIT).
+  Shows a real preview first (how many steps, the actual mission-ID range, which new slot) —
+  always writes to a NEW slot, never touches the original.
+
 ## 2026-09-27 — v0.2.0: Inventory editor, notarized Mac build
 
 ### Added
