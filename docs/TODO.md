@@ -2,7 +2,7 @@
 
 ## Facts pack
 - [x] 5,235 items with names/icons from the user's own install (`packages/gamedata`, `data-forge` build-facts)
-- [ ] Use item names + icons in the UI (knowledge lists, inventories)
+- [x] Use item names + icons in the UI (Inventory editor — knowledge lists still plain text)
 
 ## M0 Foundations
 - [x] Repo, clean-room CLAUDE.md, private GitHub remote
@@ -27,8 +27,18 @@
 
 ## M2 Full editing (in progress — this is the "extensive save editing" ask)
 - [x] Raw Explorer: generic browse + edit of any field in any save (`packages/engine/src/explorer.ts` + app screen, in-place write with the existing safe-write guard). This is the write-into-original-save path — no longer merge-only.
-- [ ] Domain screens on top of the same engine (inventories, freighter/frigates/squadron, exocraft, bases/settlements, discoveries, milestones/reputation) — Raw Explorer covers these today, generically but plainly; these give each a purpose-built, friendlier UI
+- [x] Inventory editor: real names/icons/search for every container (exosuit x3, active ship/tool, freighter x3, corvette storage, 10 base chests + 2 exotic + cooking/fishing/food) — same design quality as Merge Studio, in all 3 skins
+- [ ] Domain screens for the rest (freighter/frigates/squadron, exocraft, bases/settlements, discoveries, milestones/reputation) — Raw Explorer covers these today, generically but plainly; these give each a purpose-built, friendlier UI
 - [ ] Bulk actions (max-out a stack, unlock all tech, etc.) with preview before write
+
+## M2 Story Day
+- [x] Story-skip preset: complete the Artemis + Atlas paths without replaying, using
+  okranger1777/nms-mission-progress's documented mission-completion values (MIT, credited).
+  Always writes to a new slot. Verified against the real Ralfar save (never regresses a mission
+  already past its complete value; running it twice is a real no-op).
+- [ ] More presets (Nexus/community missions, individual side-story lines) — currently one bundled
+  "Artemis + Atlas" preset covers the two main paths only
+- [ ] Mission viewer (see what CurrentMissionID/the progress array actually mean, browseable)
 
 ## Discovered
 - [ ] Survival check: re-read after a play session and report which edits stuck
