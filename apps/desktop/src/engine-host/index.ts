@@ -26,6 +26,7 @@ import {
   openExplorer,
   writeExplorer,
 } from './explorer.ts';
+import { closeStoryPreview, openStoryPreview, storyPresets, writeStoryPreset } from './story.ts';
 import { iconPng } from './icons.ts';
 import { toOverviewView } from './views.ts';
 
@@ -156,6 +157,15 @@ async function handle(req: EngineRequest): Promise<unknown> {
       return inventoryClearSlot(req.explorerId, req.containerKey, req.arrayIndex);
     case 'itemSearch':
       return itemSearch(req.query);
+    case 'storyPresets':
+      return storyPresets();
+    case 'openStoryPreview':
+      return openStoryPreview(mapping, req.root, req.sourceSlot, req.presetId);
+    case 'writeStoryPreset':
+      if (await isGameRunning()) throw new Error("No Man's Sky is running — quit the game before writing.");
+      return writeStoryPreset(req.storyId, req.name);
+    case 'closeStoryPreview':
+      return closeStoryPreview(req.storyId);
     case 'icon':
       return iconPng(req.path, USER_DATA);
   }

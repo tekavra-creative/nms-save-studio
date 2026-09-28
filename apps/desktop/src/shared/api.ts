@@ -129,6 +129,26 @@ export interface ItemSearchHitView {
   rarity?: string;
 }
 
+export interface StoryPresetListEntryView {
+  id: string;
+  label: string;
+  stepCount: number;
+}
+
+export interface StoryPreviewView {
+  storyId: string;
+  root: string;
+  sourceSlot: number;
+  sourceTitle: string;
+  presetId: string;
+  fromMissionId: string;
+  toMissionId: string;
+  /** How many mission steps this preset will fill in (new or advanced) that aren't already there. */
+  filled: number;
+  /** The slot a write will create — writes never touch the original save. */
+  newSlot: number | null;
+}
+
 export interface SurvivalCheckView {
   group: 'Starships' | 'Multi-tools' | 'Companions' | 'Knowledge';
   text: string;
@@ -223,6 +243,10 @@ export interface StudioApi {
   inventoryFillSlot(explorerId: string, containerKey: string, x: number, y: number, itemId: string, amount: number): Promise<ContainerView>;
   inventoryClearSlot(explorerId: string, containerKey: string, arrayIndex: number): Promise<ContainerView>;
   itemSearch(query: string): Promise<ItemSearchHitView[]>;
+  storyPresets(): Promise<StoryPresetListEntryView[]>;
+  openStoryPreview(root: string, sourceSlot: number, presetId: string): Promise<StoryPreviewView>;
+  writeStoryPreset(storyId: string, name: string): Promise<WriteResultView>;
+  closeStoryPreview(storyId: string): Promise<void>;
 }
 
 export type EngineRequest =
@@ -257,6 +281,10 @@ export type EngineRequest =
   | { op: 'inventoryFillSlot'; explorerId: string; containerKey: string; x: number; y: number; itemId: string; amount: number }
   | { op: 'inventoryClearSlot'; explorerId: string; containerKey: string; arrayIndex: number }
   | { op: 'itemSearch'; query: string }
+  | { op: 'storyPresets' }
+  | { op: 'openStoryPreview'; root: string; sourceSlot: number; presetId: string }
+  | { op: 'writeStoryPreset'; storyId: string; name: string }
+  | { op: 'closeStoryPreview'; storyId: string }
   // internal only (served to the renderer via the nms-icon:// protocol, never callable directly)
   | { op: 'icon'; path: string };
 
@@ -292,6 +320,10 @@ export const ENGINE_OPS: readonly EngineRequest['op'][] = [
   'inventoryFillSlot',
   'inventoryClearSlot',
   'itemSearch',
+  'storyPresets',
+  'openStoryPreview',
+  'writeStoryPreset',
+  'closeStoryPreview',
 ];
 
 export const API_CHANNEL = 'studio:call';

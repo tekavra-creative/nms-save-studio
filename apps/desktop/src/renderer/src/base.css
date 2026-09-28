@@ -44,6 +44,7 @@ body.ms-dragging * {
 .explore-link {
   display: inline-block;
   margin-top: 6px;
+  margin-right: 14px;
   padding: 0;
   border: 0;
   background: none;
@@ -128,6 +129,32 @@ body.ms-dragging * {
 }
 .survival-panel li.lost .mark {
   color: #e0555a;
+}
+.survival-panel .meta {
+  margin: 0 0 10px;
+  font: 400 13px system-ui, sans-serif;
+  opacity: 0.85;
+}
+.survival-panel .meta code {
+  font: 500 12px ui-monospace, monospace;
+  background: color-mix(in oklch, currentColor 10%, transparent);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.survival-panel .write {
+  font: 600 13px system-ui, sans-serif;
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in oklch, currentColor 22%, transparent);
+  background: currentColor;
+  cursor: pointer;
+}
+.survival-panel .write span {
+  color: Canvas;
+}
+.survival-panel .write:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 .survival-panel .grp {
   opacity: 0.6;

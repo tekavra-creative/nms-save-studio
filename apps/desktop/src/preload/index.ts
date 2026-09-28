@@ -35,6 +35,10 @@ const api: StudioApi = {
   inventoryFillSlot: (explorerId, containerKey, x, y, itemId, amount) => call({ op: 'inventoryFillSlot', explorerId, containerKey, x, y, itemId, amount }),
   inventoryClearSlot: (explorerId, containerKey, arrayIndex) => call({ op: 'inventoryClearSlot', explorerId, containerKey, arrayIndex }),
   itemSearch: (query) => call({ op: 'itemSearch', query }),
+  storyPresets: () => call({ op: 'storyPresets' }),
+  openStoryPreview: (root, sourceSlot, presetId) => call({ op: 'openStoryPreview', root, sourceSlot, presetId }),
+  writeStoryPreset: (storyId, name) => call({ op: 'writeStoryPreset', storyId, name }),
+  closeStoryPreview: (storyId) => call({ op: 'closeStoryPreview', storyId }),
 };
 
 contextBridge.exposeInMainWorld('studio', api);

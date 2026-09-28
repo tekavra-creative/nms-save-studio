@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { SaveRootView, SlotView, SurvivalReportView } from '../../../shared/api.ts';
+import type { SaveRootView, SlotView, StoryPresetListEntryView, StoryPreviewView, SurvivalReportView, WriteResultView } from '../../../shared/api.ts';
 import type { SkinManifest } from '../skins/types.ts';
 import { CommandPalette, type Command } from '../ui/CommandPalette.tsx';
 
@@ -27,6 +27,11 @@ export function SavesHome({ skin, skins, setSkin, skinCommands, onOpen, onExplor
   const [survival, setSurvival] = useState<SurvivalReportView | null>(null);
   const [survivalError, setSurvivalError] = useState<string | null>(null);
   const [checkingSurvival, setCheckingSurvival] = useState(false);
+  const [presets, setPresets] = useState<StoryPresetListEntryView[]>([]);
+  const [storyPreview, setStoryPreview] = useState<StoryPreviewView | null>(null);
+  const [storyError, setStoryError] = useState<string | null>(null);
+  const [storyWriteStage, setStoryWriteStage] = useState<'idle' | 'confirm' | 'busy'>('idle');
+  const [storyWritten, setStoryWritten] = useState<WriteResultView | null>(null);
 
   useEffect(() => {
     window.studio
@@ -38,6 +43,7 @@ export function SavesHome({ skin, skins, setSkin, skinCommands, onOpen, onExplor
         setSlots(await window.studio.listSlots(first.path));
       })
       .catch((e: Error) => setError(e.message));
+    window.studio.storyPresets().then(setPresets).catch(() => {});
     const poll = () => window.studio.gameRunning().then(setRunning).catch(() => {});
     poll();
     const t = setInterval(poll, 2500);
@@ -79,6 +85,41 @@ export function SavesHome({ skin, skins, setSkin, skinCommands, onOpen, onExplor
       .catch((e: Error) => {
         setSurvivalError(e.message);
         setCheckingSurvival(false);
+      });
+  };
+
+  const openStoryPreview = (slot: number) => {
+    if (!root || !presets[0]) return;
+    setStoryError(null);
+    setStoryWritten(null);
+    setStoryWriteStage('idle');
+    window.studio
+      .openStoryPreview(root.path, slot, presets[0].id)
+      .then(setStoryPreview)
+      .catch((e: Error) => setStoryError(e.message));
+  };
+
+  const closeStoryPreview = () => {
+    if (storyPreview) void window.studio.closeStoryPreview(storyPreview.storyId);
+    setStoryPreview(null);
+  };
+
+  const writeStory = () => {
+    if (!storyPreview) return;
+    if (storyWriteStage !== 'confirm') {
+      setStoryWriteStage('confirm');
+      return;
+    }
+    setStoryWriteStage('busy');
+    window.studio
+      .writeStoryPreset(storyPreview.storyId, `${storyPreview.sourceTitle} — story skip`)
+      .then((res) => {
+        setStoryWritten(res);
+        setStoryWriteStage('idle');
+      })
+      .catch((e: Error) => {
+        setStoryError(e.message);
+        setStoryWriteStage('idle');
       });
   };
 
@@ -172,6 +213,18 @@ export function SavesHome({ skin, skins, setSkin, skinCommands, onOpen, onExplor
                     Browse every field →
                   </button>
                 )}
+                {root && presets[0] && (
+                  <button
+                    type="button"
+                    className="explore-link"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openStoryPreview(s.slot);
+                    }}
+                  >
+                    Skip the story →
+                  </button>
+                )}
               </li>
             );
           })}
@@ -212,6 +265,39 @@ export function SavesHome({ skin, skins, setSkin, skinCommands, onOpen, onExplor
                   </li>
                 ))}
               </ul>
+            </div>
+          )}
+          {storyError && (
+            <p className="studio-error" role="alert">
+              {storyError}
+            </p>
+          )}
+          {storyPreview && (
+            <div className="survival-panel" role="dialog" aria-label="Story skip">
+              <div className="survival-head">
+                <h3>
+                  {storyWritten ? 'Written' : `Fills ${storyPreview.filled} step${storyPreview.filled === 1 ? '' : 's'}`} —{' '}
+                  {storyPreview.sourceTitle}
+                </h3>
+                <button type="button" onClick={closeStoryPreview}>
+                  Close
+                </button>
+              </div>
+              {storyWritten ? (
+                <p className="meta">
+                  Written to slot {storyWritten.slot}. Backed up first at <code>{storyWritten.snapshot}</code>.
+                </p>
+              ) : (
+                <>
+                  <p className="meta">
+                    Moves the story from <code>{storyPreview.fromMissionId}</code> to <code>{storyPreview.toMissionId}</code>.
+                    Nothing is written until you press below — your original save is never touched.
+                  </p>
+                  <button type="button" className="write" disabled={storyWriteStage === 'busy'} onClick={writeStory}>
+                    <span>{storyWriteStage === 'confirm' ? 'Click again to write to a new slot' : `Write to slot ${storyPreview.newSlot ?? '?'}`}</span>
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>
