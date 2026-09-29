@@ -1,41 +1,67 @@
-# Handoff — NMS Save Studio (codename)
+# Handoff — NMS Save Studio
 
-Native Mac + Windows save editor for No Man's Sky. Headline features: merge two saves, story-skip,
-full editing with undo and preview. Plan of record: `~/.claude/plans/valiant-jumping-newell.md`.
+Native Mac (Windows not yet built) save editor for No Man's Sky. Electron + React 19 + TypeScript,
+pnpm monorepo. Plan of record: `~/.claude/plans/valiant-jumping-newell.md` (milestones M0–M5).
+Public repo: https://github.com/tekavra-creative/nms-save-studio (flipped public 2026-09-27).
+Latest release: **v0.3.0**, notarized.
 
-## State (2026-09-26, end of M0 engine work)
+## What actually works today (2026-09-28)
 
-- `packages/engine` — pure TypeScript, zero runtime deps. LZ4 block codec (`src/codec/lz4.ts`),
-  save chunk container (`src/codec/chunks.ts`), XXTEA manifest (`src/manifest/`), lossless JSON tree
-  (`src/cst/scan.ts`, `src/cst/doc.ts`), undo/redo edits (`src/edit.ts`), slot copy
-  (`src/ops/slot-copy.ts`), structural diff (`src/diff.ts`), key map (`src/keys/`).
-- `packages/io` — Node-only disk layer: save-folder discovery, game-running check, slot listing,
-  safe write transaction (`src/transaction.ts`).
-- `tools/nmsx` — dev CLI: `node tools/nmsx/nmsx.ts list | copy-slot | diff`.
-- Tests: `pnpm test` (engine 29, io 5). Real-save tests read `~/NMSCorpus` and skip if absent.
+- **Merge Studio** — drag ships/multi-tools/companions/currencies/knowledge between two saves,
+  undo/redo, write to a new slot. Corvette transfer implemented but only verified against a
+  synthetic fixture — neither save in the golden corpus has ever built one.
+- **Raw Explorer** — browse/search/edit any field in any save, in-place write (same slot), guarded
+  by fingerprint-check + snapshot + rollback. `packages/engine/src/explorer.ts`.
+- **Inventory editor** — a tab inside Raw Explorer. Every container (exosuit x3, active
+  ship/multi-tool, freighter x3, corvette storage, 10 base chests + 2 exotic +
+  cooking/fishing/food), real item names/icons/search from the facts pack.
+  `packages/engine/src/domains/inventory.ts`, `apps/desktop/src/renderer/src/explorer/InventoryGrid.tsx`.
+- **Story-skip** — "Skip the story" on each save card: completes the Artemis + Atlas paths using
+  okranger1777/nms-mission-progress's mission-completion data (MIT, credited). Always writes to a
+  NEW slot. `packages/engine/src/domains/story.ts`.
+- **Survival check** — "Check survival" button compares a merged/edited save against its source
+  after a real play session.
+- Three skins (Parhelion default, Drydock, Portolan), all with real per-skin CSS for every screen
+  above — never a neutral/generic overlay (that was tried once for Raw Explorer/Inventory and
+  Vikelas correctly called it out as bad UX; fixed).
+- Mac build is **notarized** with a real Developer ID cert (only the Apple account's Account
+  Holder can create that cert — automation can't; Vikelas did the one-time Xcode step).
+  `apps/desktop/build/resign-nested-frameworks.cjs` fixes a real signing gotcha: Electron's bundled
+  Squirrel/Mantle/ReactiveObjC frameworks need re-signing as whole BUNDLES, not just their inner
+  binaries, or Gatekeeper (not notarization — that didn't catch it) rejects the app.
 
 ## Format facts the code depends on
 
 - Slot N = `save(2N−1).hg` (auto) + `save(2N).hg` (manual); slot 1 = `save.hg`/`save2.hg`.
 - Manifest slot index for XXTEA key: `save.hg`=2, `saveN.hg`=N+1.
-- Manifest bytes 0x15C–0x163 = `CommonStateData.SaveUniversalId` (little-endian). A copied slot must
-  get a new ID in both places or cross-save may treat it as the original.
-- PS5-origin manifests carry junk after text terminators — text fields are rewritten only when
-  changed.
+- `CommonStateData.SaveUniversalId` / `SaveName` are the fields a slot copy must rewrite.
+- `PersistentPlayerBases` lives at `BaseContext.PlayerStateData.PersistentPlayerBases` (confirmed
+  against real saves) — a corvette is ALSO one of these entries, `BaseType.PersistentBaseTypes ==
+  "PlayerShipBase"`, `UserData == ship slot index`.
+- Inventory containers (`Inventory`, `ShipInventory`, `FreighterInventory`, `Chest1Inventory`, …)
+  all share one shape: `Slots[]` (sparse — only occupied cells stored) + `ValidSlotIndices[]`
+  (which grid cells are unlocked) + `Width`/`Height`. `Slots[i]` = `{Type:{InventoryType}, Id,
+  Amount, MaxAmount, DamageFactor, FullyInstalled, AddedAutomatically, Index:{X,Y}}`.
+- `MissionProgress[]` (554+ entries in a mid-game save) = `{Mission, Progress, Seed, Data, Stat,
+  Participants}`. `Progress` is NOT a 0/1 flag — it's mission-internal state; "complete" values are
+  documented per-mission by the community, not derivable from one save alone.
+  `CurrentMissionID` is the game's own "where am I" pointer.
 - Save JSON has raw non-UTF-8 bytes; never use `JSON.parse` or `TextDecoder('latin1')` (that label
   is windows-1252).
 
-## Live state on Vikelas's Mac
+## Known gaps
 
-- Slot 2 = Ralfar, slot 3 = Space Anomaly (both untouched).
-- Slot 4 = "Studio Test" (copy of Ralfar written by `nmsx copy-slot`, `save7.hg`) — awaiting his
-  in-game check. Delete it in-game any time.
-- Pre-write snapshot: `~/Library/Application Support/NMS Save Studio/Snapshots/`.
-- Backup of the original folder: `~/Desktop/NMS_backup_20260926_1348/`.
+- **Windows build**: never built or tested — needs Vikelas's Windows machine.
+- **Corvette merge**: code exists, only synthetic-fixture-tested.
+- Domain screens still missing: freighter/frigates/squadron, exocraft, bases/settlements,
+  discoveries, milestones/reputation — Raw Explorer reaches all of these generically today.
+- Story-skip only has one bundled preset ("Artemis + Atlas"); no Nexus/side-quest presets, no
+  mission viewer.
+- No auto-updater, no landing page beyond the GitHub repo/README.
 
 ## Next
 
-1. His in-game check of "Studio Test" (M0 acceptance).
-2. Merge worktree agents' branches: data-forge spike (HGPAK + icon) and Merge Studio hero comps.
-3. M1: domain adapters (ships, multitools, pets, currencies, known lists) → Electron shell →
-   Merge Studio.
+1. Nexus/side-mission story presets, or a browsable mission viewer.
+2. Domain-specific screens (freighter, bases, exocraft) with the same design-quality bar as
+   Merge Studio / Inventory editor.
+3. Windows build + signing (Azure Trusted Signing, ~$10/mo — needs Vikelas's go-ahead to spend).
